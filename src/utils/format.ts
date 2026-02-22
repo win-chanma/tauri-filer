@@ -1,0 +1,11 @@
+export function formatFileSize(bytes: number): string {
+  if (bytes === 0) return "---";
+  const units = ["B", "KB", "MB", "GB", "TB"];
+  const i = Math.floor(Math.log(bytes) / Math.log(1024));
+  const size = bytes / Math.pow(1024, i);
+  return `${size.toFixed(i === 0 ? 0 : 1)} ${units[i]}`;
+}
+
+export function formatDate(dateStr: string | null): string {
+  return dateStr || "---";
+}
