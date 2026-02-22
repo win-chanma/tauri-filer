@@ -12,6 +12,7 @@ import {
   deleteItems,
   copyItems,
   moveItems,
+  openFile,
 } from "../commands/fs-commands";
 import { useKeyboardShortcuts } from "../hooks/use-keyboard-shortcuts";
 import { TabBar } from "./TabBar";
@@ -145,7 +146,7 @@ export function AppLayout() {
       if (entry.isDir) {
         navigateTo(entry.path);
       } else {
-        setPreviewEntry(entry);
+        openFile(entry.path).catch(console.error);
       }
     },
     [navigateTo]
@@ -164,6 +165,14 @@ export function AppLayout() {
               const entry = getSelectedEntry();
               if (entry) handleFileOpen(entry);
             },
+          },
+        ]
+      : []),
+    ...(selectedEntry && !selectedEntry.isDir
+      ? [
+          {
+            label: "Preview",
+            onClick: () => setPreviewEntry(selectedEntry),
           },
         ]
       : []),
