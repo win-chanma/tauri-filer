@@ -1,7 +1,85 @@
-# Tauri + React + Typescript
+# Tauri Filer
 
-This template should help get you started developing with Tauri, React and Typescript in Vite.
+Tauri 2 + React 19 + TypeScript で構築されたクロスプラットフォーム対応のデスクトップファイルマネージャー。
 
-## Recommended IDE Setup
+## 機能
 
-- [VS Code](https://code.visualstudio.com/) + [Tauri](https://marketplace.visualstudio.com/items?itemName=tauri-apps.tauri-vscode) + [rust-analyzer](https://marketplace.visualstudio.com/items?itemName=rust-lang.rust-analyzer)
+- **デュアルビュー**: リスト表示 / グリッド表示の切替
+- **タブ**: 複数タブでのディレクトリ閲覧、履歴ナビゲーション (戻る/進む/上へ)
+- **ファイル操作**: コピー、移動、削除 (ゴミ箱)、リネーム、新規フォルダ作成
+- **ドラッグ&ドロップ**: ファイルのドラッグ&ドロップによる移動・コピー
+- **検索**: ディレクトリ内のファイル名検索
+- **ファイルプレビュー**: テキストファイルのプレビュー表示
+- **ブックマーク**: よく使うディレクトリのブックマーク管理
+- **キーボードショートカット**: Ctrl+C/X/V、Delete、F2 等
+- **右クリックメニュー**: コンテキストメニューによるファイル操作
+- **隠しファイル表示切替**
+
+## 技術スタック
+
+| レイヤー | 技術 |
+|---------|------|
+| Frontend | React 19, TypeScript, Tailwind CSS 4, Zustand 5 |
+| Backend | Rust, Tauri 2 |
+| Build | Vite 7, Bun |
+| Test | Vitest, Testing Library (Frontend) / cargo test (Backend) |
+
+## 必要な環境
+
+- [Bun](https://bun.sh/) v1.0+
+- [Rust](https://rustup.rs/) (stable)
+- Tauri 2 の [OS別の依存パッケージ](https://v2.tauri.app/start/prerequisites/)
+
+## セットアップ
+
+```bash
+# リポジトリのクローン
+git clone https://github.com/win-chanma/tauri-filer.git
+cd tauri-filer
+
+# 依存パッケージのインストール
+bun install
+
+# 開発サーバーの起動
+bun tauri dev
+```
+
+## テスト
+
+```bash
+# Frontend テスト
+bun run test
+
+# Backend テスト
+cd src-tauri && cargo test
+
+# Frontend テスト (ウォッチモード)
+bun run test:watch
+```
+
+## ビルド
+
+```bash
+# プロダクションビルド
+bun tauri build
+```
+
+## プロジェクト構成
+
+```
+tauri-filer/
+  src/                  # Frontend (React + TypeScript)
+    components/         # UI コンポーネント
+    stores/             # Zustand ストア
+    hooks/              # カスタムフック
+    commands/           # Tauri コマンド呼び出し
+    utils/              # ユーティリティ関数
+    types/              # 型定義
+  src-tauri/            # Backend (Rust)
+    src/commands/       # Tauri コマンド実装
+    src/models/         # データモデル
+```
+
+## ライセンス
+
+[MIT](LICENSE)

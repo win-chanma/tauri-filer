@@ -2,7 +2,8 @@
 name = "tauri-filer"
 version = "0.1.0"
 description = "Desktop File Manager"
-authors = ["you"]
+authors = ["win-chanma"]
+license = "MIT"
 edition = "2021"
 
 [lib]
