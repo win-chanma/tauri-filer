@@ -64,6 +64,52 @@ bun run test:watch
 bun tauri build
 ```
 
+## インストール
+
+[Releases](https://github.com/win-chanma/tauri-filer/releases) から各プラットフォーム向けのインストーラーをダウンロードできます。
+
+| プラットフォーム | ファイル |
+|---|---|
+| Windows | `.msi` / `.exe` (NSIS) |
+| macOS (Apple Silicon) | `aarch64.dmg` |
+| macOS (Intel) | `x64.dmg` |
+| Linux | `.AppImage` / `.deb` / `.rpm` |
+
+### macOS での注意事項
+
+本アプリは署名・公証されていないため、macOS のセキュリティ機能により「アプリが壊れているため開けません」と表示される場合があります。
+
+以下のいずれかの方法で起動できます。
+
+**方法1: ターミナルでquarantine属性を削除**
+
+```bash
+xattr -cr /Applications/Tauri\ Filer.app
+```
+
+**方法2: システム設定から許可**
+
+1. アプリを開こうとする（エラーが出る）
+2. 「システム設定」>「プライバシーとセキュリティ」を開く
+3. 「"Tauri Filer"は開発元を確認できないため...」の横にある「このまま開く」をクリック
+
+### Linux (AppImage) での起動
+
+```bash
+chmod +x Tauri.Filer_*.AppImage
+./Tauri.Filer_*.AppImage
+```
+
+FUSE が必要です。未インストールの場合:
+
+```bash
+# Arch系 (CachyOS, Manjaro等)
+sudo pacman -S fuse2
+
+# Debian/Ubuntu系
+sudo apt install libfuse2
+```
+
 ## プロジェクト構成
 
 ```
