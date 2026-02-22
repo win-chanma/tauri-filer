@@ -1,5 +1,5 @@
 import { invoke } from "@tauri-apps/api/core";
-import { openPath } from "@tauri-apps/plugin-opener";
+import { open } from "@tauri-apps/plugin-shell";
 import type { FileEntry } from "../types";
 
 export async function readDirectory(path: string): Promise<FileEntry[]> {
@@ -58,5 +58,5 @@ export async function readFilePreview(
 }
 
 export async function openFile(path: string): Promise<void> {
-  return openPath(path);
+  return open(path);
 }
