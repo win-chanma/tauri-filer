@@ -61,6 +61,12 @@ jobs:
       - name: Install frontend dependencies
         run: bun install
 
+      - name: Kill XProtect (workaround for hdiutil Resource busy)
+        if: runner.os == 'macOS'
+        run: |
+          sudo pkill -9 XProtect >/dev/null 2>&1 || true
+          while pgrep XProtect; do sleep 3; done
+
       - uses: tauri-apps/tauri-action@v0
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
