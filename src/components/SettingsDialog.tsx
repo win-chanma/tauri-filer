@@ -68,7 +68,7 @@ export function SettingsDialog({ open, onClose }: SettingsDialogProps) {
         onKeyDown={(e) => {
           if (e.key === "Escape") onClose();
         }}
-        className="bg-[var(--color-bg-card)] rounded-xl w-[720px] h-[520px] flex flex-col shadow-2xl shadow-black/40 animate-[dialog-in_200ms_ease-out] outline-none"
+        className="bg-[var(--color-bg-card)] rounded-xl w-[800px] h-[520px] flex flex-col shadow-2xl shadow-black/40 animate-[dialog-in_200ms_ease-out] outline-none"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}
@@ -91,7 +91,7 @@ export function SettingsDialog({ open, onClose }: SettingsDialogProps) {
         {/* Two-pane body */}
         <div className="flex flex-1 min-h-0">
           {/* Left sidebar */}
-          <nav className="w-[200px] shrink-0 border-r border-[var(--color-border)] py-4 px-4">
+          <nav className="w-[200px] shrink-0 border-r border-[var(--color-border)] py-4 px-3">
             <ul className="space-y-0.5">
               {sections.map((section) => (
                 <li key={section.id}>
@@ -112,7 +112,7 @@ export function SettingsDialog({ open, onClose }: SettingsDialogProps) {
           </nav>
 
           {/* Right content pane */}
-          <div className="flex-1 overflow-y-auto px-10 py-8">
+          <div className="flex-1 overflow-y-auto px-8 py-8">
             {activeSection === "display" && (
               <SettingsPane title={t("settings.sectionDisplay")}>
                 <SettingRow
