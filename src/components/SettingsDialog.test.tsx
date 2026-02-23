@@ -67,6 +67,7 @@ describe("SettingsDialog", () => {
 
   it("言語選択ドロップダウンが表示される", () => {
     render(<SettingsDialog open={true} onClose={onClose} />);
+    fireEvent.click(screen.getByText("Language"));
     const select = screen.getByRole("combobox", { name: /language/i });
     expect(select).toBeInTheDocument();
     expect(select).toHaveValue("ja");
@@ -74,8 +75,26 @@ describe("SettingsDialog", () => {
 
   it("言語切替でUIStoreが更新される", () => {
     render(<SettingsDialog open={true} onClose={onClose} />);
+    fireEvent.click(screen.getByText("Language"));
     const select = screen.getByRole("combobox", { name: /language/i });
     fireEvent.change(select, { target: { value: "en" } });
     expect(useUIStore.getState().language).toBe("en");
+  });
+
+  it("Escapeキーでダイアログが閉じる", () => {
+    render(<SettingsDialog open={true} onClose={onClose} />);
+    const dialog = screen.getByRole("dialog");
+    fireEvent.keyDown(dialog, { key: "Escape" });
+    expect(onClose).toHaveBeenCalledOnce();
+  });
+
+  it("サイドバーのカテゴリ切替が動作する", () => {
+    render(<SettingsDialog open={true} onClose={onClose} />);
+    expect(screen.getByRole("switch", { name: /hidden/i })).toBeInTheDocument();
+    expect(screen.queryByRole("combobox", { name: /language/i })).not.toBeInTheDocument();
+
+    fireEvent.click(screen.getByText("Language"));
+    expect(screen.getByRole("combobox", { name: /language/i })).toBeInTheDocument();
+    expect(screen.queryByRole("switch", { name: /hidden/i })).not.toBeInTheDocument();
   });
 });
