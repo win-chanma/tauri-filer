@@ -13,11 +13,25 @@ pub struct FileEntry {
     pub mime_type: Option<String>,
 }
 
+fn is_hidden_file(name: &str, metadata: &std::fs::Metadata) -> bool {
+    #[cfg(windows)]
+    {
+        use std::os::windows::fs::MetadataExt;
+        const FILE_ATTRIBUTE_HIDDEN: u32 = 0x2;
+        (metadata.file_attributes() & FILE_ATTRIBUTE_HIDDEN != 0) || name.starts_with('.')
+    }
+    #[cfg(not(windows))]
+    {
+        let _ = metadata;
+        name.starts_with('.')
+    }
+}
+
 impl FileEntry {
     pub fn from_path(path: &std::path::Path) -> Option<Self> {
         let metadata = path.symlink_metadata().ok()?;
         let name = path.file_name()?.to_string_lossy().to_string();
-        let is_hidden = name.starts_with('.');
+        let is_hidden = is_hidden_file(&name, &metadata);
         let is_symlink = metadata.is_symlink();
 
         let real_metadata = if is_symlink {
@@ -165,6 +179,26 @@ mod tests {
     fn from_path_nonexistent() {
         let result = FileEntry::from_path(Path::new("/nonexistent/path/file.txt"));
         assert!(result.is_none());
+    }
+
+    #[cfg(not(windows))]
+    #[test]
+    fn is_hidden_file_detects_dot_prefix() {
+        let dir = tempfile::tempdir().unwrap();
+        let file_path = dir.path().join(".hidden_file");
+        fs::write(&file_path, "").unwrap();
+        let metadata = file_path.symlink_metadata().unwrap();
+        assert!(is_hidden_file(".hidden_file", &metadata));
+    }
+
+    #[cfg(not(windows))]
+    #[test]
+    fn is_hidden_file_normal_file_not_hidden() {
+        let dir = tempfile::tempdir().unwrap();
+        let file_path = dir.path().join("normal.txt");
+        fs::write(&file_path, "").unwrap();
+        let metadata = file_path.symlink_metadata().unwrap();
+        assert!(!is_hidden_file("normal.txt", &metadata));
     }
 
     #[cfg(unix)]
