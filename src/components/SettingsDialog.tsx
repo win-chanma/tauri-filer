@@ -72,7 +72,7 @@ export function SettingsDialog({ open, onClose }: SettingsDialogProps) {
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}
-        <div className="flex items-center justify-between h-14 px-6 border-b border-[var(--color-border)] shrink-0">
+        <div className="flex items-center justify-between h-14 px-8 border-b border-[var(--color-border)] shrink-0">
           <h2
             id="settings-title"
             className="text-[15px] font-semibold text-[var(--color-text)]"
@@ -91,7 +91,7 @@ export function SettingsDialog({ open, onClose }: SettingsDialogProps) {
         {/* Two-pane body */}
         <div className="flex flex-1 min-h-0">
           {/* Left sidebar */}
-          <nav className="w-[200px] shrink-0 border-r border-[var(--color-border)] py-4 px-3">
+          <nav className="w-[200px] shrink-0 border-r border-[var(--color-border)] py-4 px-5">
             <ul className="space-y-0.5">
               {sections.map((section) => (
                 <li key={section.id}>
