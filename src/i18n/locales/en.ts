@@ -12,6 +12,8 @@ export const en = {
   "settings.viewModeDesc": "Switch the file list display method",
   "settings.viewList": "List",
   "settings.viewGrid": "Grid",
+  "settings.language": "Language",
+  "settings.languageDesc": "Select the display language",
 
   // Toolbar
   "toolbar.toggleSidebar": "Toggle sidebar",

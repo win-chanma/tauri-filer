@@ -65,16 +65,17 @@ describe("SettingsDialog", () => {
     expect(onClose).toHaveBeenCalledOnce();
   });
 
-  it("言語選択ラジオボタンが表示される", () => {
+  it("言語選択ドロップダウンが表示される", () => {
     render(<SettingsDialog open={true} onClose={onClose} />);
-    expect(screen.getByRole("radio", { name: "日本語" })).toBeInTheDocument();
-    expect(screen.getByRole("radio", { name: "English" })).toBeInTheDocument();
+    const select = screen.getByRole("combobox", { name: /language/i });
+    expect(select).toBeInTheDocument();
+    expect(select).toHaveValue("ja");
   });
 
   it("言語切替でUIStoreが更新される", () => {
     render(<SettingsDialog open={true} onClose={onClose} />);
-    const enBtn = screen.getByRole("radio", { name: "English" });
-    fireEvent.click(enBtn);
+    const select = screen.getByRole("combobox", { name: /language/i });
+    fireEvent.change(select, { target: { value: "en" } });
     expect(useUIStore.getState().language).toBe("en");
   });
 });
