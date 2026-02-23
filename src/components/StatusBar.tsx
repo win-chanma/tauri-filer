@@ -1,8 +1,10 @@
+import { useTranslation } from "react-i18next";
 import { useFileStore } from "../stores/file-store";
 import { useUIStore } from "../stores/ui-store";
 import { formatFileSize } from "../utils/format";
 
 export function StatusBar() {
+  const { t } = useTranslation();
   const entries = useFileStore((s) => s.entries);
   const selectedPaths = useFileStore((s) => s.selectedPaths);
   const showHidden = useUIStore((s) => s.showHidden);
@@ -17,10 +19,10 @@ export function StatusBar() {
 
   return (
     <div className="flex items-center justify-between px-3 py-1 text-xs text-slate-500 border-t border-[#2a2a3a]">
-      <span>{visibleCount} items</span>
+      <span>{t("statusBar.items", { count: visibleCount })}</span>
       {selectedPaths.size > 0 && (
         <span>
-          {selectedPaths.size} selected
+          {t("statusBar.selected", { count: selectedPaths.size })}
           {selectedSize > 0 && ` (${formatFileSize(selectedSize)})`}
         </span>
       )}

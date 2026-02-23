@@ -1,16 +1,19 @@
 import { create } from "zustand";
-import type { ViewMode } from "../types";
+import i18n from "i18next";
+import type { ViewMode, Language } from "../types";
 
 interface UISettings {
   viewMode: ViewMode;
   sidebarVisible: boolean;
   showHidden: boolean;
+  language: Language;
 }
 
 interface UIStore extends UISettings {
   setViewMode: (mode: ViewMode) => void;
   toggleSidebar: () => void;
   toggleHidden: () => void;
+  setLanguage: (lang: Language) => void;
 }
 
 const STORAGE_KEY = "tauri-filer-ui-settings";
@@ -32,26 +35,40 @@ const defaults: UISettings = {
   viewMode: "list",
   sidebarVisible: true,
   showHidden: false,
+  language: "ja",
 };
 
 const initial: UISettings = { ...defaults, ...loadSettings() };
+
+function getSettings(state: UIStore): UISettings {
+  return {
+    viewMode: state.viewMode,
+    sidebarVisible: state.sidebarVisible,
+    showHidden: state.showHidden,
+    language: state.language,
+  };
+}
 
 export const useUIStore = create<UIStore>((set, get) => ({
   ...initial,
 
   setViewMode: (mode) => {
     set({ viewMode: mode });
-    const { viewMode, sidebarVisible, showHidden } = get();
-    saveSettings({ viewMode, sidebarVisible, showHidden });
+    saveSettings(getSettings(get()));
   },
   toggleSidebar: () => {
     set((s) => ({ sidebarVisible: !s.sidebarVisible }));
-    const { viewMode, sidebarVisible, showHidden } = get();
-    saveSettings({ viewMode, sidebarVisible, showHidden });
+    saveSettings(getSettings(get()));
   },
   toggleHidden: () => {
     set((s) => ({ showHidden: !s.showHidden }));
-    const { viewMode, sidebarVisible, showHidden } = get();
-    saveSettings({ viewMode, sidebarVisible, showHidden });
+    saveSettings(getSettings(get()));
+  },
+  setLanguage: (lang) => {
+    set({ language: lang });
+    saveSettings(getSettings(get()));
+    if (i18n.isInitialized) {
+      i18n.changeLanguage(lang);
+    }
   },
 }));

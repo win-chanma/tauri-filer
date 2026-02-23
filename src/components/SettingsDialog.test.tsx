@@ -12,6 +12,7 @@ describe("SettingsDialog", () => {
       viewMode: "list",
       sidebarVisible: true,
       showHidden: false,
+      language: "ja",
     });
   });
 
@@ -62,5 +63,18 @@ describe("SettingsDialog", () => {
     const overlay = screen.getByTestId("settings-overlay");
     fireEvent.click(overlay);
     expect(onClose).toHaveBeenCalledOnce();
+  });
+
+  it("言語選択ラジオボタンが表示される", () => {
+    render(<SettingsDialog open={true} onClose={onClose} />);
+    expect(screen.getByRole("radio", { name: "日本語" })).toBeInTheDocument();
+    expect(screen.getByRole("radio", { name: "English" })).toBeInTheDocument();
+  });
+
+  it("言語切替でUIStoreが更新される", () => {
+    render(<SettingsDialog open={true} onClose={onClose} />);
+    const enBtn = screen.getByRole("radio", { name: "English" });
+    fireEvent.click(enBtn);
+    expect(useUIStore.getState().language).toBe("en");
   });
 });

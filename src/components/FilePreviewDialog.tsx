@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { useTranslation } from "react-i18next";
 import { readFilePreview } from "../commands/fs-commands";
 import type { FileEntry } from "../types";
 import { X, FileText, ImageIcon } from "lucide-react";
@@ -10,6 +11,7 @@ interface FilePreviewDialogProps {
 }
 
 export function FilePreviewDialog({ open, entry, onClose }: FilePreviewDialogProps) {
+  const { t } = useTranslation();
   const [content, setContent] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
@@ -63,14 +65,14 @@ export function FilePreviewDialog({ open, entry, onClose }: FilePreviewDialogPro
         </div>
 
         <div className="flex-1 overflow-auto p-4">
-          {loading && <div className="text-sm text-slate-500">Loading...</div>}
+          {loading && <div className="text-sm text-slate-500">{t("preview.loading")}</div>}
           {error && <div className="text-sm text-red-400">{error}</div>}
           {isImage && (
             <img
               src={`https://asset.localhost/${entry.path}`}
               alt={entry.name}
               className="max-w-full max-h-[60vh] object-contain mx-auto"
-              onError={() => setError("Failed to load image")}
+              onError={() => setError(t("preview.imageError"))}
             />
           )}
           {content !== null && (

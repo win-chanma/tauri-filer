@@ -1,4 +1,5 @@
 import { useState, useRef, useEffect } from "react";
+import { useTranslation } from "react-i18next";
 
 interface NewFolderDialogProps {
   open: boolean;
@@ -7,6 +8,7 @@ interface NewFolderDialogProps {
 }
 
 export function NewFolderDialog({ open, onClose, onCreate }: NewFolderDialogProps) {
+  const { t } = useTranslation();
   const [name, setName] = useState("");
   const inputRef = useRef<HTMLInputElement>(null);
 
@@ -34,12 +36,12 @@ export function NewFolderDialog({ open, onClose, onCreate }: NewFolderDialogProp
         className="bg-[#12121a] border border-[#2a2a3a] rounded-xl p-5 w-[360px] shadow-2xl"
         onClick={(e) => e.stopPropagation()}
       >
-        <h3 className="text-sm font-semibold text-slate-200 mb-3">New Folder</h3>
+        <h3 className="text-sm font-semibold text-slate-200 mb-3">{t("newFolder.title")}</h3>
         <form onSubmit={handleSubmit}>
           <input
             ref={inputRef}
             className="w-full px-3 py-2 text-sm bg-[#0a0a14] border border-[#2a2a3a] rounded text-slate-200 outline-none focus:border-indigo-500"
-            placeholder="Folder name"
+            placeholder={t("newFolder.placeholder")}
             value={name}
             onChange={(e) => setName(e.target.value)}
           />
@@ -49,13 +51,13 @@ export function NewFolderDialog({ open, onClose, onCreate }: NewFolderDialogProp
               className="px-3 py-1.5 text-sm text-slate-400 hover:text-slate-200"
               onClick={onClose}
             >
-              Cancel
+              {t("newFolder.cancel")}
             </button>
             <button
               type="submit"
               className="px-3 py-1.5 text-sm bg-indigo-600 text-white rounded hover:bg-indigo-500"
             >
-              Create
+              {t("newFolder.submit")}
             </button>
           </div>
         </form>

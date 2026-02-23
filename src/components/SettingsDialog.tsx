@@ -1,5 +1,7 @@
+import { useTranslation } from "react-i18next";
 import { useUIStore } from "../stores/ui-store";
 import { X, List, LayoutGrid } from "lucide-react";
+import type { Language } from "../types";
 
 interface SettingsDialogProps {
   open: boolean;
@@ -7,14 +9,21 @@ interface SettingsDialogProps {
 }
 
 export function SettingsDialog({ open, onClose }: SettingsDialogProps) {
+  const { t } = useTranslation();
   const viewMode = useUIStore((s) => s.viewMode);
   const setViewMode = useUIStore((s) => s.setViewMode);
   const sidebarVisible = useUIStore((s) => s.sidebarVisible);
   const toggleSidebar = useUIStore((s) => s.toggleSidebar);
   const showHidden = useUIStore((s) => s.showHidden);
   const toggleHidden = useUIStore((s) => s.toggleHidden);
+  const language = useUIStore((s) => s.language);
+  const setLanguage = useUIStore((s) => s.setLanguage);
 
   if (!open) return null;
+
+  const handleLanguageChange = (lang: Language) => {
+    setLanguage(lang);
+  };
 
   return (
     <div
@@ -28,68 +37,99 @@ export function SettingsDialog({ open, onClose }: SettingsDialogProps) {
       >
         {/* Header */}
         <div className="flex items-center justify-between h-14 px-6 border-b border-[var(--color-border)]">
-          <h2 className="text-base font-semibold text-[var(--color-text)]">Settings</h2>
+          <h2 className="text-base font-semibold text-[var(--color-text)]">{t("settings.title")}</h2>
           <button
             className="p-2 -mr-2 rounded-lg text-[var(--color-text-muted)] hover:text-[var(--color-text)] hover:bg-[var(--color-bg-hover)] transition-colors"
             onClick={onClose}
-            title="Close"
+            title={t("settings.close")}
           >
             <X size={18} />
           </button>
         </div>
 
         {/* Content */}
-        <div className="p-6">
-          <h3 className="text-xs font-semibold text-[var(--color-text-muted)] uppercase tracking-widest mb-3">
-            表示
-          </h3>
+        <div className="p-6 space-y-6">
+          {/* Display section */}
+          <div>
+            <h3 className="text-xs font-semibold text-[var(--color-text-muted)] uppercase tracking-widest mb-3">
+              {t("settings.sectionDisplay")}
+            </h3>
 
-          <div className="rounded-lg border border-[var(--color-border)] overflow-hidden divide-y divide-[var(--color-border)]">
-            <SettingRow
-              label="隠しファイルを表示"
-              description="ドットで始まるファイルやフォルダを表示します"
-            >
-              <ToggleSwitch
-                checked={showHidden}
-                onChange={toggleHidden}
-                aria-label="Show hidden files"
-              />
-            </SettingRow>
-
-            <SettingRow
-              label="サイドバー"
-              description="ナビゲーション用のサイドバーを表示します"
-            >
-              <ToggleSwitch
-                checked={sidebarVisible}
-                onChange={toggleSidebar}
-                aria-label="Sidebar visible"
-              />
-            </SettingRow>
-
-            <SettingRow
-              label="表示モード"
-              description="ファイル一覧の表示方法を切り替えます"
-            >
-              <div
-                className="flex rounded-lg overflow-hidden border border-[var(--color-border)]"
-                role="radiogroup"
+            <div className="rounded-lg border border-[var(--color-border)] overflow-hidden divide-y divide-[var(--color-border)]">
+              <SettingRow
+                label={t("settings.showHidden")}
+                description={t("settings.showHiddenDesc")}
               >
-                <ViewModeButton
-                  label="List"
-                  icon={<List size={14} />}
-                  active={viewMode === "list"}
-                  onClick={() => setViewMode("list")}
+                <ToggleSwitch
+                  checked={showHidden}
+                  onChange={toggleHidden}
+                  aria-label="Show hidden files"
                 />
-                <div className="w-px bg-[var(--color-border)]" />
-                <ViewModeButton
-                  label="Grid"
-                  icon={<LayoutGrid size={14} />}
-                  active={viewMode === "grid"}
-                  onClick={() => setViewMode("grid")}
+              </SettingRow>
+
+              <SettingRow
+                label={t("settings.sidebar")}
+                description={t("settings.sidebarDesc")}
+              >
+                <ToggleSwitch
+                  checked={sidebarVisible}
+                  onChange={toggleSidebar}
+                  aria-label="Sidebar visible"
                 />
+              </SettingRow>
+
+              <SettingRow
+                label={t("settings.viewMode")}
+                description={t("settings.viewModeDesc")}
+              >
+                <div
+                  className="flex rounded-lg overflow-hidden border border-[var(--color-border)]"
+                  role="radiogroup"
+                >
+                  <ViewModeButton
+                    label={t("settings.viewList")}
+                    icon={<List size={14} />}
+                    active={viewMode === "list"}
+                    onClick={() => setViewMode("list")}
+                  />
+                  <div className="w-px bg-[var(--color-border)]" />
+                  <ViewModeButton
+                    label={t("settings.viewGrid")}
+                    icon={<LayoutGrid size={14} />}
+                    active={viewMode === "grid"}
+                    onClick={() => setViewMode("grid")}
+                  />
+                </div>
+              </SettingRow>
+            </div>
+          </div>
+
+          {/* Language section */}
+          <div>
+            <h3 className="text-xs font-semibold text-[var(--color-text-muted)] uppercase tracking-widest mb-3">
+              {t("settings.sectionLanguage")}
+            </h3>
+
+            <div className="rounded-lg border border-[var(--color-border)] overflow-hidden">
+              <div className="flex items-center justify-between min-h-[64px] px-5 py-4 bg-[var(--color-bg)]/30">
+                <div
+                  className="flex rounded-lg overflow-hidden border border-[var(--color-border)]"
+                  role="radiogroup"
+                >
+                  <ViewModeButton
+                    label="日本語"
+                    active={language === "ja"}
+                    onClick={() => handleLanguageChange("ja")}
+                  />
+                  <div className="w-px bg-[var(--color-border)]" />
+                  <ViewModeButton
+                    label="English"
+                    active={language === "en"}
+                    onClick={() => handleLanguageChange("en")}
+                  />
+                </div>
               </div>
-            </SettingRow>
+            </div>
           </div>
         </div>
       </div>
@@ -154,7 +194,7 @@ function ViewModeButton({
   onClick,
 }: {
   label: string;
-  icon: React.ReactNode;
+  icon?: React.ReactNode;
   active: boolean;
   onClick: () => void;
 }) {

@@ -10,14 +10,16 @@ describe("uiStore", () => {
       viewMode: "list",
       sidebarVisible: true,
       showHidden: false,
+      language: "ja",
     });
   });
 
-  it("初期状態: list, sidebar表示, hidden非表示", () => {
+  it("初期状態: list, sidebar表示, hidden非表示, 日本語", () => {
     const state = useUIStore.getState();
     expect(state.viewMode).toBe("list");
     expect(state.sidebarVisible).toBe(true);
     expect(state.showHidden).toBe(false);
+    expect(state.language).toBe("ja");
   });
 
   describe("setViewMode", () => {
@@ -59,6 +61,19 @@ describe("uiStore", () => {
     });
   });
 
+  describe("setLanguage", () => {
+    it("英語に切り替える", () => {
+      useUIStore.getState().setLanguage("en");
+      expect(useUIStore.getState().language).toBe("en");
+    });
+
+    it("日本語に戻す", () => {
+      useUIStore.getState().setLanguage("en");
+      useUIStore.getState().setLanguage("ja");
+      expect(useUIStore.getState().language).toBe("ja");
+    });
+  });
+
   describe("localStorage永続化", () => {
     it("setViewModeでlocalStorageに保存される", () => {
       useUIStore.getState().setViewMode("grid");
@@ -76,6 +91,12 @@ describe("uiStore", () => {
       useUIStore.getState().toggleHidden();
       const stored = JSON.parse(localStorage.getItem(STORAGE_KEY)!);
       expect(stored.showHidden).toBe(true);
+    });
+
+    it("setLanguageでlocalStorageに保存される", () => {
+      useUIStore.getState().setLanguage("en");
+      const stored = JSON.parse(localStorage.getItem(STORAGE_KEY)!);
+      expect(stored.language).toBe("en");
     });
 
     it("localStorageから設定を復元する", () => {

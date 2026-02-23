@@ -1,3 +1,4 @@
+import { useTranslation } from "react-i18next";
 import { useTabStore } from "../stores/tab-store";
 import { useUIStore } from "../stores/ui-store";
 import { useNavigation } from "../hooks/use-navigation";
@@ -21,6 +22,7 @@ interface ToolbarProps {
 }
 
 export function Toolbar({ onSettingsOpen }: ToolbarProps) {
+  const { t } = useTranslation();
   const canGoBack = useTabStore((s) => s.canGoBack);
   const canGoForward = useTabStore((s) => s.canGoForward);
   const viewMode = useUIStore((s) => s.viewMode);
@@ -35,19 +37,19 @@ export function Toolbar({ onSettingsOpen }: ToolbarProps) {
     <div className="flex items-center gap-2 px-4 h-12 border-b border-[var(--color-border)]">
       {/* Navigation group */}
       <div className="flex items-center gap-1">
-        <NavButton onClick={toggleSidebar} title="Toggle sidebar">
+        <NavButton onClick={toggleSidebar} title={t("toolbar.toggleSidebar")}>
           {sidebarVisible ? <PanelLeftClose size={18} /> : <PanelLeft size={18} />}
         </NavButton>
-        <NavButton onClick={back} disabled={!canGoBack()} title="Back">
+        <NavButton onClick={back} disabled={!canGoBack()} title={t("toolbar.back")}>
           <ArrowLeft size={18} />
         </NavButton>
-        <NavButton onClick={forward} disabled={!canGoForward()} title="Forward">
+        <NavButton onClick={forward} disabled={!canGoForward()} title={t("toolbar.forward")}>
           <ArrowRight size={18} />
         </NavButton>
-        <NavButton onClick={up} title="Parent directory">
+        <NavButton onClick={up} title={t("toolbar.parentDir")}>
           <ArrowUp size={18} />
         </NavButton>
-        <NavButton onClick={refresh} title="Refresh">
+        <NavButton onClick={refresh} title={t("toolbar.refresh")}>
           <RefreshCw size={18} />
         </NavButton>
       </div>
@@ -57,24 +59,24 @@ export function Toolbar({ onSettingsOpen }: ToolbarProps) {
       {/* Action group */}
       <div className="flex items-center gap-1">
         {onSettingsOpen && (
-          <NavButton onClick={onSettingsOpen} title="Settings">
+          <NavButton onClick={onSettingsOpen} title={t("toolbar.settings")}>
             <Settings size={18} />
           </NavButton>
         )}
-        <NavButton onClick={toggleHidden} title="Toggle hidden files">
+        <NavButton onClick={toggleHidden} title={t("toolbar.toggleHidden")}>
           {showHidden ? <Eye size={18} /> : <EyeOff size={18} />}
         </NavButton>
         <NavButton
           onClick={() => setViewMode("list")}
           active={viewMode === "list"}
-          title="List view"
+          title={t("toolbar.listView")}
         >
           <List size={18} />
         </NavButton>
         <NavButton
           onClick={() => setViewMode("grid")}
           active={viewMode === "grid"}
-          title="Grid view"
+          title={t("toolbar.gridView")}
         >
           <LayoutGrid size={18} />
         </NavButton>

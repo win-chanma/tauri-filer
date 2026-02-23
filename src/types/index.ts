@@ -12,6 +12,7 @@ export interface FileEntry {
 export type SortKey = "name" | "size" | "modified";
 export type SortOrder = "asc" | "desc";
 export type ViewMode = "list" | "grid";
+export type Language = "ja" | "en";
 
 export interface TabState {
   id: string;
