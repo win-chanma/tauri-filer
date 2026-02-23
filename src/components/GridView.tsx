@@ -2,8 +2,10 @@ import { useMemo, useCallback } from "react";
 import { VirtuosoGrid } from "react-virtuoso";
 import { useFileStore } from "../stores/file-store";
 import { useUIStore } from "../stores/ui-store";
+import { useClipboardStore } from "../stores/clipboard-store";
 import { useNavigation } from "../hooks/use-navigation";
 import { sortEntries } from "../utils/sort";
+import { isCutPath } from "../utils/clipboard-helpers";
 import { FileCard } from "./FileCard";
 import type { FileEntry } from "../types";
 
@@ -19,6 +21,8 @@ export function GridView({ onContextMenu, onFileOpen }: GridViewProps) {
   const selectedPaths = useFileStore((s) => s.selectedPaths);
   const setSelectedPaths = useFileStore((s) => s.setSelectedPaths);
   const toggleSelection = useFileStore((s) => s.toggleSelection);
+  const clipboardPaths = useClipboardStore((s) => s.paths);
+  const clipboardMode = useClipboardStore((s) => s.mode);
   const { navigateTo } = useNavigation();
 
   const sortedEntries = useMemo(
@@ -58,11 +62,12 @@ export function GridView({ onContextMenu, onFileOpen }: GridViewProps) {
       <FileCard
         entry={entry}
         selected={selectedPaths.has(entry.path)}
+        isCut={isCutPath(entry.path, clipboardPaths, clipboardMode)}
         onSelect={(e) => handleSelect(entry, e)}
         onOpen={() => handleOpen(entry)}
       />
     ),
-    [selectedPaths, handleSelect, handleOpen]
+    [selectedPaths, clipboardPaths, clipboardMode, handleSelect, handleOpen]
   );
 
   return (

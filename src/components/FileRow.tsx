@@ -2,10 +2,12 @@ import { memo, useState } from "react";
 import type { FileEntry } from "../types";
 import { FileIcon } from "./FileIcon";
 import { formatFileSize, formatDate } from "../utils/format";
+import { getFileOpacity } from "../utils/file-opacity";
 
 interface FileRowProps {
   entry: FileEntry;
   selected: boolean;
+  isCut: boolean;
   onSelect: (e: React.MouseEvent) => void;
   onOpen: () => void;
   onContextMenu?: (e: React.MouseEvent) => void;
@@ -17,6 +19,7 @@ interface FileRowProps {
 export const FileRow = memo(function FileRow({
   entry,
   selected,
+  isCut,
   onSelect,
   onOpen,
   onContextMenu,
@@ -25,6 +28,7 @@ export const FileRow = memo(function FileRow({
   onDrop,
 }: FileRowProps) {
   const [dropTarget, setDropTarget] = useState(false);
+  const opacityClass = getFileOpacity({ isHidden: entry.isHidden, isCut });
 
   return (
     <div
@@ -34,7 +38,7 @@ export const FileRow = memo(function FileRow({
           : selected
             ? "bg-indigo-500/20 text-slate-100"
             : "text-slate-400 hover:bg-white/5"
-      }`}
+      }${opacityClass ? ` ${opacityClass}` : ""}`}
       onClick={onSelect}
       onDoubleClick={onOpen}
       onContextMenu={(e) => {

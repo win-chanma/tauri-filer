@@ -3,9 +3,11 @@ import { Virtuoso } from "react-virtuoso";
 import { useFileStore } from "../stores/file-store";
 import { useUIStore } from "../stores/ui-store";
 import { useTabStore } from "../stores/tab-store";
+import { useClipboardStore } from "../stores/clipboard-store";
 import { useDragDrop } from "../hooks/use-drag-drop";
 import { useNavigation } from "../hooks/use-navigation";
 import { sortEntries } from "../utils/sort";
+import { isCutPath } from "../utils/clipboard-helpers";
 import { FileRow } from "./FileRow";
 import type { FileEntry, SortKey } from "../types";
 import { ArrowUp, ArrowDown } from "lucide-react";
@@ -31,6 +33,8 @@ export function ListView({ onContextMenu, onFileOpen }: ListViewProps) {
   const setSortConfig = useFileStore((s) => s.setSortConfig);
   const loadDirectory = useFileStore((s) => s.loadDirectory);
   const { navigateTo } = useNavigation();
+  const clipboardPaths = useClipboardStore((s) => s.paths);
+  const clipboardMode = useClipboardStore((s) => s.mode);
   const { handleDragStart, handleDragOver, handleDrop } = useDragDrop();
 
   const sortedEntries = useMemo(
@@ -84,6 +88,7 @@ export function ListView({ onContextMenu, onFileOpen }: ListViewProps) {
       <FileRow
         entry={entry}
         selected={selectedPaths.has(entry.path)}
+        isCut={isCutPath(entry.path, clipboardPaths, clipboardMode)}
         onSelect={(e) => handleSelect(entry, e)}
         onOpen={() => handleOpen(entry)}
         onContextMenu={onContextMenu}
@@ -99,7 +104,7 @@ export function ListView({ onContextMenu, onFileOpen }: ListViewProps) {
         }}
       />
     ),
-    [selectedPaths, handleSelect, handleOpen, onContextMenu, handleDragStart, handleDragOver, handleDrop, loadDirectory]
+    [selectedPaths, clipboardPaths, clipboardMode, handleSelect, handleOpen, onContextMenu, handleDragStart, handleDragOver, handleDrop, loadDirectory]
   );
 
   return (
