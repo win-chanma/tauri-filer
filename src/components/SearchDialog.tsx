@@ -1,4 +1,5 @@
 import { useState, useRef, useEffect } from "react";
+import { useTranslation } from "react-i18next";
 import { searchFiles } from "../commands/fs-commands";
 import { useTabStore } from "../stores/tab-store";
 import { useNavigation } from "../hooks/use-navigation";
@@ -12,6 +13,7 @@ interface SearchDialogProps {
 }
 
 export function SearchDialog({ open, onClose }: SearchDialogProps) {
+  const { t } = useTranslation();
   const [query, setQuery] = useState("");
   const [results, setResults] = useState<FileEntry[]>([]);
   const [searching, setSearching] = useState(false);
@@ -69,7 +71,7 @@ export function SearchDialog({ open, onClose }: SearchDialogProps) {
           <input
             ref={inputRef}
             className="flex-1 bg-transparent text-sm text-slate-200 outline-none placeholder:text-slate-600"
-            placeholder="Search files..."
+            placeholder={t("search.placeholder")}
             value={query}
             onChange={(e) => setQuery(e.target.value)}
           />
@@ -79,7 +81,7 @@ export function SearchDialog({ open, onClose }: SearchDialogProps) {
         <div className="flex-1 overflow-y-auto">
           {results.length === 0 && !searching && query && (
             <div className="text-sm text-slate-500 text-center py-8">
-              No results found
+              {t("search.noResults")}
             </div>
           )}
           {results.map((entry) => (

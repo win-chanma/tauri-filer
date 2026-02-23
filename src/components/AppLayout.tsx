@@ -1,4 +1,5 @@
 import { useEffect, useState, useCallback } from "react";
+import { useTranslation } from "react-i18next";
 import { useTabStore } from "../stores/tab-store";
 import { useFileStore } from "../stores/file-store";
 import { useUIStore } from "../stores/ui-store";
@@ -33,6 +34,7 @@ import { Spinner } from "./Spinner";
 import type { FileEntry } from "../types";
 
 export function AppLayout() {
+  const { t } = useTranslation();
   const tabs = useTabStore((s) => s.tabs);
   const addTab = useTabStore((s) => s.addTab);
   const loadDirectory = useFileStore((s) => s.loadDirectory);
@@ -162,7 +164,7 @@ export function AppLayout() {
     ...(hasSelection
       ? [
           {
-            label: "Open",
+            label: t("context.open"),
             onClick: () => {
               const entry = getSelectedEntry();
               if (entry) handleFileOpen(entry);
@@ -173,30 +175,30 @@ export function AppLayout() {
     ...(selectedEntry && !selectedEntry.isDir
       ? [
           {
-            label: "Preview",
+            label: t("context.preview"),
             onClick: () => setPreviewEntry(selectedEntry),
           },
         ]
       : []),
     ...(hasSelection
       ? [
-          { label: "Copy", shortcut: "Ctrl+C", onClick: () => clipboardCopy(Array.from(selectedPaths)) },
-          { label: "Cut", shortcut: "Ctrl+X", onClick: () => clipboardCut(Array.from(selectedPaths)) },
+          { label: t("context.copy"), shortcut: "Ctrl+C", onClick: () => clipboardCopy(Array.from(selectedPaths)) },
+          { label: t("context.cut"), shortcut: "Ctrl+X", onClick: () => clipboardCut(Array.from(selectedPaths)) },
         ]
       : []),
     ...(hasClipboard
-      ? [{ label: "Paste", shortcut: "Ctrl+V", onClick: handlePaste }]
+      ? [{ label: t("context.paste"), shortcut: "Ctrl+V", onClick: handlePaste }]
       : []),
     { separator: true, label: "", onClick: () => {} },
-    { label: "New Folder", shortcut: "Ctrl+Shift+N", onClick: () => setNewFolderOpen(true) },
+    { label: t("context.newFolder"), shortcut: "Ctrl+Shift+N", onClick: () => setNewFolderOpen(true) },
     ...(selectedPaths.size === 1
-      ? [{ label: "Rename", shortcut: "F2", onClick: () => setRenameOpen(true) }]
+      ? [{ label: t("context.rename"), shortcut: "F2", onClick: () => setRenameOpen(true) }]
       : []),
     ...(hasSelection
       ? [
           { separator: true, label: "", onClick: () => {} },
           {
-            label: "Delete",
+            label: t("context.delete"),
             shortcut: "Del",
             danger: true,
             onClick: () => setDeleteOpen(true),

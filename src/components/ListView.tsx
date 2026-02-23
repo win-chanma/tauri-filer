@@ -1,4 +1,5 @@
 import { useMemo, useCallback } from "react";
+import { useTranslation } from "react-i18next";
 import { Virtuoso } from "react-virtuoso";
 import { useFileStore } from "../stores/file-store";
 import { useUIStore } from "../stores/ui-store";
@@ -23,6 +24,7 @@ function SortIcon({ sortKey, activeKey, order }: { sortKey: SortKey; activeKey: 
 }
 
 export function ListView({ onContextMenu, onFileOpen }: ListViewProps) {
+  const { t } = useTranslation();
   const entries = useFileStore((s) => s.entries);
   const sortConfig = useFileStore((s) => s.sortConfig);
   const showHidden = useUIStore((s) => s.showHidden);
@@ -114,19 +116,19 @@ export function ListView({ onContextMenu, onFileOpen }: ListViewProps) {
           className="flex items-center gap-1 hover:text-slate-300 text-left"
           onClick={() => handleSortClick("name")}
         >
-          Name <SortIcon sortKey="name" activeKey={sortConfig.key} order={sortConfig.order} />
+          {t("listView.name")} <SortIcon sortKey="name" activeKey={sortConfig.key} order={sortConfig.order} />
         </button>
         <button
           className="flex items-center gap-1 justify-end hover:text-slate-300"
           onClick={() => handleSortClick("size")}
         >
-          Size <SortIcon sortKey="size" activeKey={sortConfig.key} order={sortConfig.order} />
+          {t("listView.size")} <SortIcon sortKey="size" activeKey={sortConfig.key} order={sortConfig.order} />
         </button>
         <button
           className="flex items-center gap-1 justify-end hover:text-slate-300"
           onClick={() => handleSortClick("modified")}
         >
-          Modified <SortIcon sortKey="modified" activeKey={sortConfig.key} order={sortConfig.order} />
+          {t("listView.modified")} <SortIcon sortKey="modified" activeKey={sortConfig.key} order={sortConfig.order} />
         </button>
       </div>
 

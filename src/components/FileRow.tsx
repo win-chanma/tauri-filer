@@ -1,4 +1,5 @@
 import { memo, useState } from "react";
+import { useTranslation } from "react-i18next";
 import type { FileEntry } from "../types";
 import { FileIcon } from "./FileIcon";
 import { formatFileSize, formatDate } from "../utils/format";
@@ -27,6 +28,7 @@ export const FileRow = memo(function FileRow({
   onDragOver,
   onDrop,
 }: FileRowProps) {
+  const { t } = useTranslation();
   const [dropTarget, setDropTarget] = useState(false);
   const opacityClass = getFileOpacity({ isHidden: entry.isHidden, isCut });
 
@@ -68,7 +70,7 @@ export const FileRow = memo(function FileRow({
         </span>
       </div>
       <span className="text-xs text-right tabular-nums">
-        {entry.isDir ? "---" : formatFileSize(entry.size)}
+        {entry.isDir ? t("fileRow.noSize") : formatFileSize(entry.size)}
       </span>
       <span className="text-xs text-right tabular-nums">
         {formatDate(entry.modified)}
