@@ -12,6 +12,8 @@ export const ja = {
   "settings.viewModeDesc": "ファイル一覧の表示方法を切り替えます",
   "settings.viewList": "リスト",
   "settings.viewGrid": "グリッド",
+  "settings.language": "言語",
+  "settings.languageDesc": "表示言語を選択します",
 
   // Toolbar
   "toolbar.toggleSidebar": "サイドバーの切替",
