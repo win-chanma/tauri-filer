@@ -13,9 +13,14 @@ import {
   PanelLeft,
   Eye,
   EyeOff,
+  Settings,
 } from "lucide-react";
 
-export function Toolbar() {
+interface ToolbarProps {
+  onSettingsOpen?: () => void;
+}
+
+export function Toolbar({ onSettingsOpen }: ToolbarProps) {
   const canGoBack = useTabStore((s) => s.canGoBack);
   const canGoForward = useTabStore((s) => s.canGoForward);
   const viewMode = useUIStore((s) => s.viewMode);
@@ -27,42 +32,53 @@ export function Toolbar() {
   const { back, forward, up, refresh } = useNavigation();
 
   return (
-    <div className="flex items-center gap-1 px-2 py-1.5 border-b border-[#2a2a3a]">
-      <NavButton onClick={toggleSidebar} title="Toggle sidebar">
-        {sidebarVisible ? <PanelLeftClose size={16} /> : <PanelLeft size={16} />}
-      </NavButton>
-      <NavButton onClick={back} disabled={!canGoBack()} title="Back">
-        <ArrowLeft size={16} />
-      </NavButton>
-      <NavButton onClick={forward} disabled={!canGoForward()} title="Forward">
-        <ArrowRight size={16} />
-      </NavButton>
-      <NavButton onClick={up} title="Parent directory">
-        <ArrowUp size={16} />
-      </NavButton>
-      <NavButton onClick={refresh} title="Refresh">
-        <RefreshCw size={16} />
-      </NavButton>
+    <div className="flex items-center gap-2 px-4 h-12 border-b border-[var(--color-border)]">
+      {/* Navigation group */}
+      <div className="flex items-center gap-1">
+        <NavButton onClick={toggleSidebar} title="Toggle sidebar">
+          {sidebarVisible ? <PanelLeftClose size={18} /> : <PanelLeft size={18} />}
+        </NavButton>
+        <NavButton onClick={back} disabled={!canGoBack()} title="Back">
+          <ArrowLeft size={18} />
+        </NavButton>
+        <NavButton onClick={forward} disabled={!canGoForward()} title="Forward">
+          <ArrowRight size={18} />
+        </NavButton>
+        <NavButton onClick={up} title="Parent directory">
+          <ArrowUp size={18} />
+        </NavButton>
+        <NavButton onClick={refresh} title="Refresh">
+          <RefreshCw size={18} />
+        </NavButton>
+      </div>
 
       <AddressBar />
 
-      <NavButton onClick={toggleHidden} title="Toggle hidden files">
-        {showHidden ? <Eye size={16} /> : <EyeOff size={16} />}
-      </NavButton>
-      <NavButton
-        onClick={() => setViewMode("list")}
-        active={viewMode === "list"}
-        title="List view"
-      >
-        <List size={16} />
-      </NavButton>
-      <NavButton
-        onClick={() => setViewMode("grid")}
-        active={viewMode === "grid"}
-        title="Grid view"
-      >
-        <LayoutGrid size={16} />
-      </NavButton>
+      {/* Action group */}
+      <div className="flex items-center gap-1">
+        {onSettingsOpen && (
+          <NavButton onClick={onSettingsOpen} title="Settings">
+            <Settings size={18} />
+          </NavButton>
+        )}
+        <NavButton onClick={toggleHidden} title="Toggle hidden files">
+          {showHidden ? <Eye size={18} /> : <EyeOff size={18} />}
+        </NavButton>
+        <NavButton
+          onClick={() => setViewMode("list")}
+          active={viewMode === "list"}
+          title="List view"
+        >
+          <List size={18} />
+        </NavButton>
+        <NavButton
+          onClick={() => setViewMode("grid")}
+          active={viewMode === "grid"}
+          title="Grid view"
+        >
+          <LayoutGrid size={18} />
+        </NavButton>
+      </div>
     </div>
   );
 }
@@ -82,8 +98,10 @@ function NavButton({
 }) {
   return (
     <button
-      className={`p-1.5 rounded hover:bg-white/10 disabled:opacity-30 disabled:cursor-not-allowed ${
-        active ? "text-indigo-400 bg-indigo-500/10" : "text-slate-400 hover:text-slate-200"
+      className={`p-2 rounded-lg hover:bg-[var(--color-bg-hover)] disabled:opacity-30 disabled:cursor-not-allowed transition-colors ${
+        active
+          ? "text-[var(--color-accent-light)] bg-[var(--color-accent)]/10"
+          : "text-[var(--color-text-dim)] hover:text-[var(--color-text)]"
       }`}
       onClick={onClick}
       disabled={disabled}

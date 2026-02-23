@@ -27,6 +27,7 @@ import { RenameDialog } from "./RenameDialog";
 import { DeleteConfirmDialog } from "./DeleteConfirmDialog";
 import { SearchDialog } from "./SearchDialog";
 import { FilePreviewDialog } from "./FilePreviewDialog";
+import { SettingsDialog } from "./SettingsDialog";
 import { EmptyState } from "./EmptyState";
 import { Spinner } from "./Spinner";
 import type { FileEntry } from "../types";
@@ -55,6 +56,7 @@ export function AppLayout() {
   const [deleteOpen, setDeleteOpen] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
   const [previewEntry, setPreviewEntry] = useState<FileEntry | null>(null);
+  const [settingsOpen, setSettingsOpen] = useState(false);
 
   const { menu, show: showContextMenu, hide: hideContextMenu } = useContextMenu();
 
@@ -206,7 +208,7 @@ export function AppLayout() {
   return (
     <div className="flex flex-col h-screen bg-[#0a0a0f] text-slate-200">
       <TabBar />
-      <Toolbar />
+      <Toolbar onSettingsOpen={() => setSettingsOpen(true)} />
       <div className="flex flex-1 min-h-0">
         {sidebarVisible && <Sidebar />}
         <main className="flex-1 min-w-0 flex flex-col">
@@ -258,6 +260,10 @@ export function AppLayout() {
         open={!!previewEntry}
         entry={previewEntry}
         onClose={() => setPreviewEntry(null)}
+      />
+      <SettingsDialog
+        open={settingsOpen}
+        onClose={() => setSettingsOpen(false)}
       />
     </div>
   );
