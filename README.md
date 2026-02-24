@@ -1,4 +1,20 @@
-# Tauri Filer
+<p align="center">
+  <img src="src-tauri/icons/128x128.png" alt="Tauri Filer" />
+</p>
+
+<h1 align="center">Tauri Filer</h1>
+
+<p align="center">
+  <a href="https://github.com/win-chanma/tauri-filer/releases/latest"><img src="https://img.shields.io/github/v/release/win-chanma/tauri-filer" alt="GitHub Release" /></a>
+  <a href="https://github.com/win-chanma/tauri-filer/actions/workflows/test.yml"><img src="https://github.com/win-chanma/tauri-filer/actions/workflows/test.yml/badge.svg" alt="Test" /></a>
+  <a href="LICENSE"><img src="https://img.shields.io/github/license/win-chanma/tauri-filer" alt="License" /></a>
+  <img src="https://img.shields.io/badge/platform-Windows%20%7C%20macOS%20%7C%20Linux-blue" alt="Platform" />
+  <img src="https://img.shields.io/badge/Tauri-2-24C8D8?logo=tauri&logoColor=white" alt="Tauri 2" />
+</p>
+
+<p align="center">
+  <a href="README.en.md">English</a>
+</p>
 
 Tauri 2 + React 19 + TypeScript で構築されたクロスプラットフォーム対応のデスクトップファイルマネージャー。
 
