@@ -77,7 +77,7 @@ export function SettingsDialog({ open, onClose }: SettingsDialogProps) {
         onKeyDown={(e) => {
           if (e.key === "Escape") onClose();
         }}
-        className="bg-[var(--color-bg-card)] rounded-xl w-[800px] h-[520px] flex flex-col shadow-2xl shadow-black/40 animate-[dialog-in_200ms_ease-out] outline-none"
+        className="bg-[var(--color-bg-card)] rounded-xl w-[800px] max-w-[90vw] h-[520px] max-h-[85vh] flex flex-col shadow-2xl shadow-black/40 animate-[dialog-in_200ms_ease-out] outline-none"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}
