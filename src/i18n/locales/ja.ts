@@ -3,6 +3,7 @@ export const ja = {
   "settings.title": "設定",
   "settings.close": "閉じる",
   "settings.sectionDisplay": "表示",
+  "settings.sectionTheme": "テーマ",
   "settings.sectionLanguage": "言語",
   "settings.showHidden": "隠しファイルを表示",
   "settings.showHiddenDesc": "ドットで始まるファイルやフォルダを表示します",

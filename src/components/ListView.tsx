@@ -111,21 +111,21 @@ export function ListView({ onContextMenu, onFileOpen }: ListViewProps) {
 
   return (
     <div className="flex flex-col h-full">
-      <div className="grid grid-cols-[1fr_80px_140px] px-3 py-1.5 text-xs text-slate-500 border-b border-[#2a2a3a] select-none">
+      <div className="grid grid-cols-[1fr_80px_140px] px-3 py-1.5 text-xs text-[var(--color-text-muted)] border-b border-[var(--color-border)] select-none">
         <button
-          className="flex items-center gap-1 hover:text-slate-300 text-left"
+          className="flex items-center gap-1 hover:text-[var(--color-text-dim)] text-left"
           onClick={() => handleSortClick("name")}
         >
           {t("listView.name")} <SortIcon sortKey="name" activeKey={sortConfig.key} order={sortConfig.order} />
         </button>
         <button
-          className="flex items-center gap-1 justify-end hover:text-slate-300"
+          className="flex items-center gap-1 justify-end hover:text-[var(--color-text-dim)]"
           onClick={() => handleSortClick("size")}
         >
           {t("listView.size")} <SortIcon sortKey="size" activeKey={sortConfig.key} order={sortConfig.order} />
         </button>
         <button
-          className="flex items-center gap-1 justify-end hover:text-slate-300"
+          className="flex items-center gap-1 justify-end hover:text-[var(--color-text-dim)]"
           onClick={() => handleSortClick("modified")}
         >
           {t("listView.modified")} <SortIcon sortKey="modified" activeKey={sortConfig.key} order={sortConfig.order} />

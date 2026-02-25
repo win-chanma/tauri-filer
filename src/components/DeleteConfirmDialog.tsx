@@ -15,22 +15,22 @@ export function DeleteConfirmDialog({ open, count, onClose, onConfirm }: DeleteC
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60" onClick={onClose}>
       <div
-        className="bg-[#12121a] border border-[#2a2a3a] rounded-xl p-5 w-[360px] shadow-2xl"
+        className="bg-[var(--color-bg-card)] border border-[var(--color-border)] rounded-xl p-5 w-[360px] shadow-2xl"
         onClick={(e) => e.stopPropagation()}
       >
-        <h3 className="text-sm font-semibold text-slate-200 mb-3">{t("delete.title")}</h3>
-        <p className="text-sm text-slate-400 mb-4">
+        <h3 className="text-sm font-semibold text-[var(--color-text)] mb-3">{t("delete.title")}</h3>
+        <p className="text-sm text-[var(--color-text-dim)] mb-4">
           {t("delete.confirm", { count })}
         </p>
         <div className="flex justify-end gap-2">
           <button
-            className="px-3 py-1.5 text-sm text-slate-400 hover:text-slate-200"
+            className="px-3 py-1.5 text-sm text-[var(--color-text-dim)] hover:text-[var(--color-text)]"
             onClick={onClose}
           >
             {t("delete.cancel")}
           </button>
           <button
-            className="px-3 py-1.5 text-sm bg-red-600 text-white rounded hover:bg-red-500"
+            className="px-3 py-1.5 text-sm bg-[var(--color-danger)] text-white rounded hover:bg-[var(--color-danger-hover)]"
             onClick={() => {
               onConfirm();
               onClose();

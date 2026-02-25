@@ -51,22 +51,24 @@ export function FilePreviewDialog({ open, entry, onClose }: FilePreviewDialogPro
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70" onClick={onClose}>
       <div
-        className="bg-[#12121a] border border-[#2a2a3a] rounded-xl w-[600px] max-h-[80vh] flex flex-col shadow-2xl"
+        className="bg-[var(--color-bg-card)] border border-[var(--color-border)] rounded-xl w-[600px] max-h-[80vh] flex flex-col shadow-2xl"
         onClick={(e) => e.stopPropagation()}
       >
-        <div className="flex items-center justify-between px-4 py-3 border-b border-[#2a2a3a]">
+        <div className="flex items-center justify-between px-4 py-3 border-b border-[var(--color-border)]">
           <div className="flex items-center gap-2 min-w-0">
-            {isImage ? <ImageIcon size={16} className="text-emerald-400" /> : <FileText size={16} className="text-slate-400" />}
-            <span className="text-sm text-slate-200 truncate">{entry.name}</span>
+            {isImage
+              ? <ImageIcon size={16} style={{ color: "var(--color-icon-image)" }} />
+              : <FileText size={16} className="text-[var(--color-text-dim)]" />}
+            <span className="text-sm text-[var(--color-text)] truncate">{entry.name}</span>
           </div>
-          <button className="text-slate-500 hover:text-slate-200" onClick={onClose}>
+          <button className="text-[var(--color-text-muted)] hover:text-[var(--color-text)]" onClick={onClose}>
             <X size={18} />
           </button>
         </div>
 
         <div className="flex-1 overflow-auto p-4">
-          {loading && <div className="text-sm text-slate-500">{t("preview.loading")}</div>}
-          {error && <div className="text-sm text-red-400">{error}</div>}
+          {loading && <div className="text-sm text-[var(--color-text-muted)]">{t("preview.loading")}</div>}
+          {error && <div className="text-sm text-[var(--color-danger-hover)]">{error}</div>}
           {isImage && (
             <img
               src={`https://asset.localhost/${entry.path}`}
@@ -76,7 +78,7 @@ export function FilePreviewDialog({ open, entry, onClose }: FilePreviewDialogPro
             />
           )}
           {content !== null && (
-            <pre className="text-xs text-slate-300 font-mono whitespace-pre-wrap break-words leading-relaxed">
+            <pre className="text-xs text-[var(--color-text-dim)] font-mono whitespace-pre-wrap break-words leading-relaxed">
               {content}
             </pre>
           )}

@@ -1,12 +1,15 @@
 import { create } from "zustand";
 import i18n from "i18next";
-import type { ViewMode, Language } from "../types";
+import type { ViewMode, Language, ThemeId } from "../types";
+import { getTheme } from "../themes";
+import { applyTheme } from "../themes/apply-theme";
 
 interface UISettings {
   viewMode: ViewMode;
   sidebarVisible: boolean;
   showHidden: boolean;
   language: Language;
+  themeId: ThemeId;
 }
 
 interface UIStore extends UISettings {
@@ -14,6 +17,7 @@ interface UIStore extends UISettings {
   toggleSidebar: () => void;
   toggleHidden: () => void;
   setLanguage: (lang: Language) => void;
+  setTheme: (themeId: ThemeId) => void;
 }
 
 const STORAGE_KEY = "tauri-filer-ui-settings";
@@ -36,6 +40,7 @@ const defaults: UISettings = {
   sidebarVisible: true,
   showHidden: false,
   language: "ja",
+  themeId: "default",
 };
 
 const initial: UISettings = { ...defaults, ...loadSettings() };
@@ -46,8 +51,12 @@ function getSettings(state: UIStore): UISettings {
     sidebarVisible: state.sidebarVisible,
     showHidden: state.showHidden,
     language: state.language,
+    themeId: state.themeId,
   };
 }
+
+// Apply theme immediately on module load to prevent FOUC
+applyTheme(getTheme(initial.themeId));
 
 export const useUIStore = create<UIStore>((set, get) => ({
   ...initial,
@@ -70,5 +79,10 @@ export const useUIStore = create<UIStore>((set, get) => ({
     if (i18n.isInitialized) {
       i18n.changeLanguage(lang);
     }
+  },
+  setTheme: (themeId) => {
+    set({ themeId });
+    saveSettings(getSettings(get()));
+    applyTheme(getTheme(themeId));
   },
 }));

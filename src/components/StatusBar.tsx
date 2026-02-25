@@ -18,7 +18,7 @@ export function StatusBar() {
     .reduce((sum, e) => sum + e.size, 0);
 
   return (
-    <div className="flex items-center justify-between px-3 py-1 text-xs text-slate-500 border-t border-[#2a2a3a]">
+    <div className="flex items-center justify-between px-3 py-1 text-xs text-[var(--color-text-muted)] border-t border-[var(--color-border)]">
       <span>{t("statusBar.items", { count: visibleCount })}</span>
       {selectedPaths.size > 0 && (
         <span>

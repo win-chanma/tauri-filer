@@ -5,7 +5,7 @@ export function EmptyState() {
   const { t } = useTranslation();
 
   return (
-    <div className="flex flex-col items-center justify-center h-full gap-3 text-slate-600">
+    <div className="flex flex-col items-center justify-center h-full gap-3 text-[var(--color-text-muted)]">
       <FolderOpen size={48} strokeWidth={1} />
       <p className="text-sm">{t("empty.message")}</p>
     </div>

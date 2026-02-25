@@ -8,10 +8,12 @@ import {
   ChevronDown,
   Monitor,
   Globe,
+  Palette,
 } from "lucide-react";
-import type { Language } from "../types";
+import type { Language, ThemeId } from "../types";
+import { themeList } from "../themes";
 
-type SectionId = "display" | "language";
+type SectionId = "display" | "theme" | "language";
 
 interface SettingsDialogProps {
   open: boolean;
@@ -28,6 +30,8 @@ export function SettingsDialog({ open, onClose }: SettingsDialogProps) {
   const toggleHidden = useUIStore((s) => s.toggleHidden);
   const language = useUIStore((s) => s.language);
   const setLanguage = useUIStore((s) => s.setLanguage);
+  const themeId = useUIStore((s) => s.themeId);
+  const setTheme = useUIStore((s) => s.setTheme);
   const dialogRef = useRef<HTMLDivElement>(null);
   const [activeSection, setActiveSection] = useState<SectionId>("display");
 
@@ -45,6 +49,11 @@ export function SettingsDialog({ open, onClose }: SettingsDialogProps) {
       id: "display",
       label: t("settings.sectionDisplay"),
       icon: <Monitor size={16} />,
+    },
+    {
+      id: "theme",
+      label: t("settings.sectionTheme"),
+      icon: <Palette size={16} />,
     },
     {
       id: "language",
@@ -156,6 +165,23 @@ export function SettingsDialog({ open, onClose }: SettingsDialogProps) {
                     />
                   </SegmentedControl>
                 </SettingRow>
+              </SettingsPane>
+            )}
+
+            {activeSection === "theme" && (
+              <SettingsPane title={t("settings.sectionTheme")}>
+                <div className="grid grid-cols-3 gap-3 p-4">
+                  {themeList.map((theme) => (
+                    <ThemeSwatch
+                      key={theme.id}
+                      themeId={theme.id}
+                      name={language === "ja" ? theme.nameJa : theme.name}
+                      preview={theme.preview}
+                      active={themeId === theme.id}
+                      onClick={() => setTheme(theme.id)}
+                    />
+                  ))}
+                </div>
               </SettingsPane>
             )}
 
@@ -315,5 +341,39 @@ function LanguageSelect({
         className="absolute right-3 top-1/2 -translate-y-1/2 text-[var(--color-text-muted)] pointer-events-none"
       />
     </div>
+  );
+}
+
+function ThemeSwatch({
+  themeId: _id,
+  name,
+  preview,
+  active,
+  onClick,
+}: {
+  themeId: ThemeId;
+  name: string;
+  preview: [string, string, string];
+  active: boolean;
+  onClick: () => void;
+}) {
+  return (
+    <button
+      className={`flex flex-col items-center gap-1.5 p-2 rounded-lg border transition-colors ${
+        active
+          ? "border-[var(--color-accent)] ring-1 ring-[var(--color-accent)]"
+          : "border-[var(--color-border)] hover:border-[var(--color-text-muted)]"
+      }`}
+      onClick={onClick}
+    >
+      <div className="flex w-full h-6 rounded overflow-hidden">
+        <div className="flex-1" style={{ background: preview[0] }} />
+        <div className="flex-1" style={{ background: preview[1] }} />
+        <div className="flex-1" style={{ background: preview[2] }} />
+      </div>
+      <span className="text-xs text-[var(--color-text-dim)] truncate w-full text-center">
+        {name}
+      </span>
+    </button>
   );
 }

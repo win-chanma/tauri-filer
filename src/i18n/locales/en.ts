@@ -3,6 +3,7 @@ export const en = {
   "settings.title": "Settings",
   "settings.close": "Close",
   "settings.sectionDisplay": "Display",
+  "settings.sectionTheme": "Theme",
   "settings.sectionLanguage": "Language",
   "settings.showHidden": "Show hidden files",
   "settings.showHiddenDesc": "Display files and folders starting with a dot",

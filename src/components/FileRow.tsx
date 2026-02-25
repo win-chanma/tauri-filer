@@ -36,10 +36,10 @@ export const FileRow = memo(function FileRow({
     <div
       className={`grid grid-cols-[1fr_80px_140px] items-center px-3 py-1.5 text-sm cursor-pointer rounded select-none ${
         dropTarget
-          ? "bg-indigo-500/30 ring-1 ring-indigo-400"
+          ? "bg-[var(--color-drop-target-bg)] ring-1 ring-[var(--color-drop-target-ring)]"
           : selected
-            ? "bg-indigo-500/20 text-slate-100"
-            : "text-slate-400 hover:bg-white/5"
+            ? "bg-[var(--color-selection-bg)] text-[var(--color-text)]"
+            : "text-[var(--color-text-dim)] hover:bg-white/5"
       }${opacityClass ? ` ${opacityClass}` : ""}`}
       onClick={onSelect}
       onDoubleClick={onOpen}
@@ -64,7 +64,7 @@ export const FileRow = memo(function FileRow({
       <div className="flex items-center gap-2 min-w-0">
         <FileIcon entry={entry} />
         <span
-          className={`truncate ${entry.isDir ? "text-indigo-300" : "text-slate-200"}`}
+          className={`truncate ${entry.isDir ? "text-[var(--color-dir-name)]" : "text-[var(--color-text)]"}`}
         >
           {entry.name}
         </span>
