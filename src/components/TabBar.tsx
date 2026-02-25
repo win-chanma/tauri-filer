@@ -28,14 +28,14 @@ export function TabBar() {
   };
 
   return (
-    <div className="flex items-center bg-[#16162a] border-b border-[#2a2a3a] overflow-x-auto">
+    <div className="flex items-center bg-[var(--color-bg-tab-bar)] border-b border-[var(--color-border)] overflow-x-auto">
       {tabs.map((tab) => (
         <button
           key={tab.id}
-          className={`flex items-center gap-1.5 px-3 py-1.5 text-sm border-r border-[#2a2a3a] shrink-0 ${
+          className={`flex items-center gap-1.5 px-3 py-1.5 text-sm border-r border-[var(--color-border)] shrink-0 ${
             tab.id === activeTabId
-              ? "bg-[#12121a] text-slate-200"
-              : "text-slate-500 hover:text-slate-300 hover:bg-white/5"
+              ? "bg-[var(--color-bg-card)] text-[var(--color-text)]"
+              : "text-[var(--color-text-muted)] hover:text-[var(--color-text-dim)] hover:bg-white/5"
           }`}
           onClick={() => handleTabClick(tab.id, tab.path)}
         >
@@ -50,7 +50,7 @@ export function TabBar() {
         </button>
       ))}
       <button
-        className="p-1.5 text-slate-500 hover:text-slate-300"
+        className="p-1.5 text-[var(--color-text-muted)] hover:text-[var(--color-text-dim)]"
         onClick={handleNewTab}
       >
         <Plus size={16} />

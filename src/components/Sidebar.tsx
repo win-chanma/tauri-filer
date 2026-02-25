@@ -49,9 +49,9 @@ export function Sidebar() {
   };
 
   return (
-    <aside className="w-[180px] shrink-0 border-r border-[#2a2a3a] py-2 overflow-y-auto">
+    <aside className="w-[180px] shrink-0 border-r border-[var(--color-border)] py-2 overflow-y-auto">
       <div className="px-3 mb-2">
-        <span className="text-[10px] uppercase tracking-wider text-slate-600 font-semibold">
+        <span className="text-[10px] uppercase tracking-wider text-[var(--color-text-muted)] font-semibold">
           {t("sidebar.places")}
         </span>
       </div>
@@ -60,8 +60,8 @@ export function Sidebar() {
           key={item.path}
           className={`flex items-center gap-2 w-full px-3 py-1.5 text-sm hover:bg-white/5 ${
             currentPath === item.path
-              ? "text-indigo-400 bg-indigo-500/10"
-              : "text-slate-400"
+              ? "text-[var(--color-sidebar-active)] bg-[var(--color-sidebar-active-bg)]"
+              : "text-[var(--color-text-dim)]"
           }`}
           onClick={() => handleClick(item.path)}
         >
@@ -71,7 +71,7 @@ export function Sidebar() {
       ))}
 
       <div className="px-3 mt-4 mb-2">
-        <span className="text-[10px] uppercase tracking-wider text-slate-600 font-semibold">
+        <span className="text-[10px] uppercase tracking-wider text-[var(--color-text-muted)] font-semibold">
           {t("sidebar.drives")}
         </span>
       </div>
@@ -80,8 +80,8 @@ export function Sidebar() {
           key={item.path}
           className={`flex items-center gap-2 w-full px-3 py-1.5 text-sm hover:bg-white/5 ${
             currentPath === item.path
-              ? "text-indigo-400 bg-indigo-500/10"
-              : "text-slate-400"
+              ? "text-[var(--color-sidebar-active)] bg-[var(--color-sidebar-active-bg)]"
+              : "text-[var(--color-text-dim)]"
           }`}
           onClick={() => handleClick(item.path)}
         >

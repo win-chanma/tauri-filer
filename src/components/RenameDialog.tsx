@@ -44,28 +44,28 @@ export function RenameDialog({ open, currentName, onClose, onRename }: RenameDia
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60" onClick={onClose}>
       <div
-        className="bg-[#12121a] border border-[#2a2a3a] rounded-xl p-5 w-[360px] shadow-2xl"
+        className="bg-[var(--color-bg-card)] border border-[var(--color-border)] rounded-xl p-5 w-[360px] shadow-2xl"
         onClick={(e) => e.stopPropagation()}
       >
-        <h3 className="text-sm font-semibold text-slate-200 mb-3">{t("rename.title")}</h3>
+        <h3 className="text-sm font-semibold text-[var(--color-text)] mb-3">{t("rename.title")}</h3>
         <form onSubmit={handleSubmit}>
           <input
             ref={inputRef}
-            className="w-full px-3 py-2 text-sm bg-[#0a0a14] border border-[#2a2a3a] rounded text-slate-200 outline-none focus:border-indigo-500"
+            className="w-full px-3 py-2 text-sm bg-[var(--color-bg-deep)] border border-[var(--color-border)] rounded text-[var(--color-text)] outline-none focus:border-[var(--color-accent)]"
             value={name}
             onChange={(e) => setName(e.target.value)}
           />
           <div className="flex justify-end gap-2 mt-4">
             <button
               type="button"
-              className="px-3 py-1.5 text-sm text-slate-400 hover:text-slate-200"
+              className="px-3 py-1.5 text-sm text-[var(--color-text-dim)] hover:text-[var(--color-text)]"
               onClick={onClose}
             >
               {t("rename.cancel")}
             </button>
             <button
               type="submit"
-              className="px-3 py-1.5 text-sm bg-indigo-600 text-white rounded hover:bg-indigo-500"
+              className="px-3 py-1.5 text-sm bg-[var(--color-accent)] text-white rounded hover:bg-[var(--color-accent-light)]"
             >
               {t("rename.submit")}
             </button>

@@ -42,7 +42,7 @@ export function AddressBar() {
       <form onSubmit={handleSubmit} className="flex-1 mx-2">
         <input
           ref={inputRef}
-          className="w-full px-2 py-1 text-sm bg-[#0a0a14] border border-[#2a2a3a] rounded text-cyan-400 outline-none focus:border-indigo-500"
+          className="w-full px-2 py-1 text-sm bg-[var(--color-bg-deep)] border border-[var(--color-border)] rounded text-[var(--color-path-text)] outline-none focus:border-[var(--color-accent)]"
           value={value}
           onChange={(e) => setValue(e.target.value)}
           onBlur={handleBlur}
@@ -53,7 +53,7 @@ export function AddressBar() {
 
   return (
     <button
-      className="flex-1 mx-2 px-2 py-1 text-sm text-left bg-[#0a0a14] border border-[#2a2a3a] rounded text-cyan-400 hover:border-slate-500 truncate"
+      className="flex-1 mx-2 px-2 py-1 text-sm text-left bg-[var(--color-bg-deep)] border border-[var(--color-border)] rounded text-[var(--color-path-text)] hover:border-[var(--color-text-muted)] truncate"
       onClick={handleStartEdit}
     >
       {activeTab?.path || "/"}

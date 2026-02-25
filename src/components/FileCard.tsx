@@ -18,7 +18,7 @@ export const FileCard = memo(function FileCard({ entry, selected, isCut, onSelec
     <div
       className={`flex flex-col items-center gap-1.5 p-3 rounded-lg cursor-pointer select-none ${
         selected
-          ? "bg-indigo-500/20 ring-1 ring-indigo-500/50"
+          ? "bg-[var(--color-selection-bg)] ring-1 ring-[var(--color-selection-ring)]"
           : "hover:bg-white/5"
       }${opacityClass ? ` ${opacityClass}` : ""}`}
       onClick={onSelect}
@@ -29,7 +29,7 @@ export const FileCard = memo(function FileCard({ entry, selected, isCut, onSelec
       </div>
       <span
         className={`text-xs text-center w-full truncate ${
-          entry.isDir ? "text-indigo-300" : "text-slate-300"
+          entry.isDir ? "text-[var(--color-dir-name)]" : "text-[var(--color-text-dim)]"
         }`}
       >
         {entry.name}

@@ -208,7 +208,7 @@ export function AppLayout() {
   ];
 
   return (
-    <div className="flex flex-col h-screen bg-[#0a0a0f] text-slate-200">
+    <div className="flex flex-col h-screen bg-[var(--color-bg)] text-[var(--color-text)]">
       <TabBar />
       <Toolbar onSettingsOpen={() => setSettingsOpen(true)} />
       <div className="flex flex-1 min-h-0">
@@ -216,7 +216,7 @@ export function AppLayout() {
         <main className="flex-1 min-w-0 flex flex-col">
           {loading && <Spinner />}
           {error && (
-            <div className="flex items-center justify-center py-8 text-red-400 text-sm">
+            <div className="flex items-center justify-center py-8 text-[var(--color-danger-hover)] text-sm">
               {error}
             </div>
           )}

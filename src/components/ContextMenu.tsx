@@ -49,17 +49,17 @@ export function ContextMenu({ x, y, visible, onClose, items }: ContextMenuProps)
   return createPortal(
     <div
       ref={ref}
-      className="fixed z-[100] min-w-[180px] bg-[#1a1a28] border border-[#2a2a3a] rounded-lg shadow-2xl py-1"
+      className="fixed z-[100] min-w-[180px] bg-[var(--color-bg-hover)] border border-[var(--color-border)] rounded-lg shadow-2xl py-1"
       style={{ left: adjustedX, top: adjustedY }}
     >
       {items.map((item, i) =>
         item.separator ? (
-          <div key={i} className="my-1 border-t border-[#2a2a3a]" />
+          <div key={i} className="my-1 border-t border-[var(--color-border)]" />
         ) : (
           <button
             key={i}
             className={`w-full flex items-center justify-between px-3 py-1.5 text-sm hover:bg-white/10 ${
-              item.danger ? "text-red-400" : "text-slate-300"
+              item.danger ? "text-[var(--color-danger-hover)]" : "text-[var(--color-text-dim)]"
             }`}
             onClick={() => {
               item.onClick();
@@ -68,7 +68,7 @@ export function ContextMenu({ x, y, visible, onClose, items }: ContextMenuProps)
           >
             <span>{item.label}</span>
             {item.shortcut && (
-              <span className="text-xs text-slate-600 ml-4">{item.shortcut}</span>
+              <span className="text-xs text-[var(--color-text-muted)] ml-4">{item.shortcut}</span>
             )}
           </button>
         )

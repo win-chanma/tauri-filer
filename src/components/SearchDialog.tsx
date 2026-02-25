@@ -63,24 +63,24 @@ export function SearchDialog({ open, onClose }: SearchDialogProps) {
   return (
     <div className="fixed inset-0 z-50 flex items-start justify-center pt-[10vh] bg-black/60" onClick={onClose}>
       <div
-        className="bg-[#12121a] border border-[#2a2a3a] rounded-xl w-[500px] max-h-[60vh] flex flex-col shadow-2xl"
+        className="bg-[var(--color-bg-card)] border border-[var(--color-border)] rounded-xl w-[500px] max-h-[60vh] flex flex-col shadow-2xl"
         onClick={(e) => e.stopPropagation()}
       >
-        <form onSubmit={handleSearch} className="flex items-center gap-2 px-4 py-3 border-b border-[#2a2a3a]">
-          <Search size={16} className="text-slate-500 shrink-0" />
+        <form onSubmit={handleSearch} className="flex items-center gap-2 px-4 py-3 border-b border-[var(--color-border)]">
+          <Search size={16} className="text-[var(--color-text-muted)] shrink-0" />
           <input
             ref={inputRef}
-            className="flex-1 bg-transparent text-sm text-slate-200 outline-none placeholder:text-slate-600"
+            className="flex-1 bg-transparent text-sm text-[var(--color-text)] outline-none placeholder:text-[var(--color-text-muted)]"
             placeholder={t("search.placeholder")}
             value={query}
             onChange={(e) => setQuery(e.target.value)}
           />
-          {searching && <Loader2 size={16} className="text-indigo-400 animate-spin" />}
+          {searching && <Loader2 size={16} className="text-[var(--color-accent-light)] animate-spin" />}
         </form>
 
         <div className="flex-1 overflow-y-auto">
           {results.length === 0 && !searching && query && (
-            <div className="text-sm text-slate-500 text-center py-8">
+            <div className="text-sm text-[var(--color-text-muted)] text-center py-8">
               {t("search.noResults")}
             </div>
           )}
@@ -92,8 +92,8 @@ export function SearchDialog({ open, onClose }: SearchDialogProps) {
             >
               <FileIcon entry={entry} />
               <div className="min-w-0 flex-1">
-                <div className="text-slate-200 truncate">{entry.name}</div>
-                <div className="text-xs text-slate-600 truncate">{entry.path}</div>
+                <div className="text-[var(--color-text)] truncate">{entry.name}</div>
+                <div className="text-xs text-[var(--color-text-muted)] truncate">{entry.path}</div>
               </div>
             </button>
           ))}

@@ -15,35 +15,35 @@ const ICON_SIZE = 18;
 
 export function FileIcon({ entry }: { entry: FileEntry }) {
   if (entry.isDir) {
-    return <Folder size={ICON_SIZE} className="text-indigo-400 shrink-0" />;
+    return <Folder size={ICON_SIZE} className="shrink-0" style={{ color: "var(--color-icon-folder)" }} />;
   }
 
   const mime = entry.mimeType || "";
 
   if (mime.startsWith("image/")) {
-    return <FileImage size={ICON_SIZE} className="text-emerald-400 shrink-0" />;
+    return <FileImage size={ICON_SIZE} className="shrink-0" style={{ color: "var(--color-icon-image)" }} />;
   }
   if (mime.startsWith("video/")) {
-    return <FileVideo size={ICON_SIZE} className="text-rose-400 shrink-0" />;
+    return <FileVideo size={ICON_SIZE} className="shrink-0" style={{ color: "var(--color-icon-video)" }} />;
   }
   if (mime.startsWith("audio/")) {
-    return <FileAudio size={ICON_SIZE} className="text-amber-400 shrink-0" />;
+    return <FileAudio size={ICON_SIZE} className="shrink-0" style={{ color: "var(--color-icon-audio)" }} />;
   }
   if (mime === "application/json") {
-    return <FileJson size={ICON_SIZE} className="text-yellow-400 shrink-0" />;
+    return <FileJson size={ICON_SIZE} className="shrink-0" style={{ color: "var(--color-icon-json)" }} />;
   }
   if (mime === "application/zip" || mime === "application/gzip") {
-    return <FileArchive size={ICON_SIZE} className="text-orange-400 shrink-0" />;
+    return <FileArchive size={ICON_SIZE} className="shrink-0" style={{ color: "var(--color-icon-archive)" }} />;
   }
   if (
     mime.startsWith("text/") ||
     mime === "application/xml"
   ) {
     if (mime.includes("script") || mime.includes("typescript") || mime.includes("rust")) {
-      return <FileCode size={ICON_SIZE} className="text-cyan-400 shrink-0" />;
+      return <FileCode size={ICON_SIZE} className="shrink-0" style={{ color: "var(--color-icon-code)" }} />;
     }
-    return <FileText size={ICON_SIZE} className="text-slate-400 shrink-0" />;
+    return <FileText size={ICON_SIZE} className="shrink-0" style={{ color: "var(--color-icon-text)" }} />;
   }
 
-  return <File size={ICON_SIZE} className="text-slate-500 shrink-0" />;
+  return <File size={ICON_SIZE} className="shrink-0" style={{ color: "var(--color-icon-default)" }} />;
 }

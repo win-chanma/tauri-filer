@@ -22,7 +22,7 @@ export function Breadcrumb() {
   return (
     <div className="flex items-center gap-0.5 px-3 py-1 text-sm overflow-x-auto">
       <button
-        className="text-slate-500 hover:text-slate-200 shrink-0 px-1"
+        className="text-[var(--color-text-muted)] hover:text-[var(--color-text)] shrink-0 px-1"
         onClick={() => {
           navigate("/");
           loadDirectory("/");
@@ -32,10 +32,10 @@ export function Breadcrumb() {
       </button>
       {parts.map((part, i) => (
         <span key={i} className="flex items-center gap-0.5 shrink-0">
-          <ChevronRight size={12} className="text-slate-600" />
+          <ChevronRight size={12} className="text-[var(--color-text-muted)]" />
           <button
-            className={`hover:text-slate-200 px-0.5 ${
-              i === parts.length - 1 ? "text-slate-200" : "text-slate-500"
+            className={`hover:text-[var(--color-text)] px-0.5 ${
+              i === parts.length - 1 ? "text-[var(--color-text)]" : "text-[var(--color-text-muted)]"
             }`}
             onClick={() => handleClick(i)}
           >

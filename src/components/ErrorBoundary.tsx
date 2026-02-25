@@ -28,15 +28,15 @@ export class ErrorBoundary extends Component<Props, State> {
   render() {
     if (this.state.hasError) {
       return (
-        <div className="flex flex-col items-center justify-center h-screen bg-[#0a0a0f] text-slate-200 gap-4 p-8">
-          <h1 className="text-xl font-bold text-red-400">{i18n.t("error.title")}</h1>
-          <pre className="text-sm text-slate-400 bg-[#12121a] p-4 rounded max-w-[600px] overflow-auto">
+        <div className="flex flex-col items-center justify-center h-screen bg-[var(--color-bg)] text-[var(--color-text)] gap-4 p-8">
+          <h1 className="text-xl font-bold text-[var(--color-danger-hover)]">{i18n.t("error.title")}</h1>
+          <pre className="text-sm text-[var(--color-text-dim)] bg-[var(--color-bg-card)] p-4 rounded max-w-[600px] overflow-auto">
             {this.state.error?.message}
             {"\n"}
             {this.state.error?.stack}
           </pre>
           <button
-            className="px-4 py-2 bg-indigo-600 rounded hover:bg-indigo-500 text-sm"
+            className="px-4 py-2 bg-[var(--color-accent)] rounded hover:bg-[var(--color-accent-light)] text-sm"
             onClick={() => this.setState({ hasError: false, error: null })}
           >
             {i18n.t("error.retry")}
