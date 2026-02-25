@@ -1,3 +1,8 @@
+// Theme: Nord
+// Author: Sven Greb (Arctic Ice Studio)
+// Source: https://github.com/nordtheme/nord
+// License: MIT
+
 import type { Theme } from "../types";
 
 export const nordTheme: Theme = {

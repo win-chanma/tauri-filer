@@ -1,3 +1,8 @@
+// Theme: Solarized Dark
+// Author: Ethan Schoonover
+// Source: https://github.com/altercation/solarized
+// License: MIT
+
 import type { Theme } from "../types";
 
 export const solarizedDarkTheme: Theme = {

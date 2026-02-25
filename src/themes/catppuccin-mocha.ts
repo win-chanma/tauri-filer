@@ -1,3 +1,8 @@
+// Theme: Catppuccin Mocha
+// Author: Catppuccin Org
+// Source: https://github.com/catppuccin/catppuccin
+// License: MIT
+
 import type { Theme } from "../types";
 
 export const catppuccinMochaTheme: Theme = {

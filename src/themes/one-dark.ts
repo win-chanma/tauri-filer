@@ -1,3 +1,8 @@
+// Theme: One Dark
+// Author: GitHub Inc. (Atom)
+// Source: https://github.com/atom/one-dark-syntax
+// License: MIT
+
 import type { Theme } from "../types";
 
 export const oneDarkTheme: Theme = {
