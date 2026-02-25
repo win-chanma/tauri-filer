@@ -32,3 +32,19 @@ dist-ssr
 # Claude Code
 .claude/
 CLAUDE.md
+
+# Claude Code sandbox artifacts
+/HEAD
+/config
+/hooks
+/objects
+/refs
+.bash_profile
+.bashrc
+.gitconfig
+.gitmodules
+.mcp.json
+.profile
+.ripgreprc
+.zprofile
+.zshrc
