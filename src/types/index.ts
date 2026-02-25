@@ -31,10 +31,30 @@ export type ThemeId =
   | "default"
   | "dracula"
   | "catppuccin-mocha"
+  | "catppuccin-latte"
+  | "catppuccin-frappe"
+  | "catppuccin-macchiato"
   | "nord"
   | "solarized-dark"
   | "solarized-light"
-  | "one-dark";
+  | "one-dark"
+  | "atom-one-light"
+  | "tokyo-night"
+  | "gruvbox-dark"
+  | "gruvbox-light"
+  | "github-dark"
+  | "github-light"
+  | "rose-pine"
+  | "rose-pine-moon"
+  | "rose-pine-dawn"
+  | "everforest"
+  | "kanagawa"
+  | "ayu-dark"
+  | "ayu-light"
+  | "ayu-mirage"
+  | "palenight"
+  | "synthwave-84"
+  | "horizon";
 
 export interface ThemeColors {
   // Base

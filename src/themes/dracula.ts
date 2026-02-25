@@ -1,3 +1,8 @@
+// Theme: Dracula
+// Author: Zeno Rocha
+// Source: https://github.com/dracula/dracula-theme
+// License: MIT
+
 import type { Theme } from "../types";
 
 export const draculaTheme: Theme = {
