@@ -15,6 +15,8 @@ import {
   moveItems,
   openFile,
 } from "../commands/fs-commands";
+import { buildContextMenuItems } from "../utils/context-menu-items";
+import { createContextMenuHandlers } from "../utils/context-menu-handlers";
 import { useKeyboardShortcuts } from "../hooks/use-keyboard-shortcuts";
 import { TabBar } from "./TabBar";
 import { Toolbar } from "./Toolbar";
@@ -90,122 +92,52 @@ export function AppLayout() {
     }
   }, []);
 
-  const handleCreateFolder = async (name: string) => {
-    const tab = useTabStore.getState().tabs.find(
-      (t) => t.id === useTabStore.getState().activeTabId
-    );
-    if (!tab) return;
-    try {
-      await createDirectory(tab.path, name);
-      refresh();
-    } catch (err) {
-      console.error("Create folder failed:", err);
-    }
-  };
-
-  const handleRename = async (newName: string) => {
-    const entry = getSelectedEntry();
-    if (!entry) return;
-    try {
-      await renameItem(entry.path, newName);
-      clearSelection();
-      refresh();
-    } catch (err) {
-      console.error("Rename failed:", err);
-    }
-  };
-
-  const handleDelete = async () => {
-    const paths = Array.from(selectedPaths);
-    if (paths.length === 0) return;
-    try {
-      await deleteItems(paths);
-      clearSelection();
-      refresh();
-    } catch (err) {
-      console.error("Delete failed:", err);
-    }
-  };
-
-  const handlePaste = async () => {
-    const tab = useTabStore.getState().tabs.find(
-      (t) => t.id === useTabStore.getState().activeTabId
-    );
-    if (!tab || clipboardPaths.length === 0) return;
-    try {
-      if (clipboardMode === "copy") {
-        await copyItems(clipboardPaths, tab.path);
-      } else if (clipboardMode === "cut") {
-        await moveItems(clipboardPaths, tab.path);
-        clipboardClear();
-      }
-      refresh();
-    } catch (err) {
-      console.error("Paste failed:", err);
-    }
-  };
-
-  const handleFileOpen = useCallback(
-    (entry: FileEntry) => {
-      if (entry.isDir) {
-        navigateTo(entry.path);
-      } else {
-        openFile(entry.path).catch(console.error);
-      }
-    },
-    [navigateTo]
-  );
+  const { handleFileOpen, handlePaste, handleCreateFolder, handleRename, handleDelete } =
+    createContextMenuHandlers({
+      getActiveTabPath: () => {
+        const tab = useTabStore.getState().tabs.find(
+          (t) => t.id === useTabStore.getState().activeTabId
+        );
+        return tab?.path ?? null;
+      },
+      getSelectedEntry,
+      getSelectedPaths: () => Array.from(selectedPaths),
+      navigateTo,
+      openFile,
+      createDirectory,
+      renameItem,
+      deleteItems,
+      copyItems,
+      moveItems,
+      clipboardPaths,
+      clipboardMode,
+      clipboardClear,
+      clearSelection,
+      refresh,
+    });
 
   const selectedEntry = getSelectedEntry();
   const hasSelection = selectedPaths.size > 0;
   const hasClipboard = clipboardPaths.length > 0;
 
-  const contextMenuItems = [
-    ...(hasSelection
-      ? [
-          {
-            label: t("context.open"),
-            onClick: () => {
-              const entry = getSelectedEntry();
-              if (entry) handleFileOpen(entry);
-            },
-          },
-        ]
-      : []),
-    ...(selectedEntry && !selectedEntry.isDir
-      ? [
-          {
-            label: t("context.preview"),
-            onClick: () => setPreviewEntry(selectedEntry),
-          },
-        ]
-      : []),
-    ...(hasSelection
-      ? [
-          { label: t("context.copy"), shortcut: "Ctrl+C", onClick: () => clipboardCopy(Array.from(selectedPaths)) },
-          { label: t("context.cut"), shortcut: "Ctrl+X", onClick: () => clipboardCut(Array.from(selectedPaths)) },
-        ]
-      : []),
-    ...(hasClipboard
-      ? [{ label: t("context.paste"), shortcut: "Ctrl+V", onClick: handlePaste }]
-      : []),
-    { separator: true, label: "", onClick: () => {} },
-    { label: t("context.newFolder"), shortcut: "Ctrl+Shift+N", onClick: () => setNewFolderOpen(true) },
-    ...(selectedPaths.size === 1
-      ? [{ label: t("context.rename"), shortcut: "F2", onClick: () => setRenameOpen(true) }]
-      : []),
-    ...(hasSelection
-      ? [
-          { separator: true, label: "", onClick: () => {} },
-          {
-            label: t("context.delete"),
-            shortcut: "Del",
-            danger: true,
-            onClick: () => setDeleteOpen(true),
-          },
-        ]
-      : []),
-  ];
+  const contextMenuItems = buildContextMenuItems({
+    t,
+    hasSelection,
+    selectedEntry,
+    selectedCount: selectedPaths.size,
+    hasClipboard,
+    onOpen: () => {
+      const entry = getSelectedEntry();
+      if (entry) handleFileOpen(entry);
+    },
+    onPreview: () => setPreviewEntry(selectedEntry),
+    onCopy: () => clipboardCopy(Array.from(selectedPaths)),
+    onCut: () => clipboardCut(Array.from(selectedPaths)),
+    onPaste: handlePaste,
+    onNewFolder: () => setNewFolderOpen(true),
+    onRename: () => setRenameOpen(true),
+    onDelete: () => setDeleteOpen(true),
+  });
 
   return (
     <div className="flex flex-col h-screen bg-[var(--color-bg)] text-[var(--color-text)]">
