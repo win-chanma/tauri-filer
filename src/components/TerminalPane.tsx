@@ -36,12 +36,17 @@ export function TerminalPane({ cwd }: TerminalPaneProps) {
     if (!termRef.current) return;
 
     // xterm.js インスタンスを作成
+    // CSS カスタムプロパティを解決（xterm.js は canvas 描画なので var() が使えない）
+    const styles = getComputedStyle(document.documentElement);
+    const bgColor = styles.getPropertyValue("--color-bg-deep").trim() || "#1e1e1e";
+    const fgColor = styles.getPropertyValue("--color-text").trim() || "#d4d4d4";
+
     const term = new Terminal({
       fontSize: terminalFontSize,
       fontFamily: "'Cascadia Code', 'Consolas', 'Courier New', monospace",
       theme: {
-        background: "var(--color-bg-deep, #1e1e1e)",
-        foreground: "var(--color-text, #d4d4d4)",
+        background: bgColor,
+        foreground: fgColor,
       },
       cursorBlink: true,
       convertEol: true,
@@ -54,12 +59,14 @@ export function TerminalPane({ cwd }: TerminalPaneProps) {
     xtermRef.current = term;
     fitAddonRef.current = fitAddon;
 
-    // 初回 fit
-    try {
-      fitAddon.fit();
-    } catch {
-      // 初期化時にエラーになる場合がある
-    }
+    // レンダラー初期化完了後に fit を実行
+    requestAnimationFrame(() => {
+      try {
+        fitAddon.fit();
+      } catch {
+        // 初期化タイミングで失敗する場合がある
+      }
+    });
 
     // PTY セッションを起動
     try {
