@@ -36,7 +36,6 @@ export function TerminalPane({ cwd, width }: TerminalPaneProps) {
   const initTerminal = useCallback(async () => {
     if (!termRef.current) return;
 
-    // xterm.js インスタンスを作成
     // CSS カスタムプロパティを解決（xterm.js は canvas 描画なので var() が使えない）
     const styles = getComputedStyle(document.documentElement);
     const bgColor = styles.getPropertyValue("--color-bg-deep").trim() || "#1e1e1e";
@@ -59,16 +58,20 @@ export function TerminalPane({ cwd, width }: TerminalPaneProps) {
     xtermRef.current = term;
     fitAddonRef.current = fitAddon;
 
-    // レンダラー初期化完了後に fit を実行
-    requestAnimationFrame(() => {
-      try {
-        fitAddon.fit();
-      } catch {
-        // 初期化タイミングで失敗する場合がある
-      }
+    // レンダラー初期化完了を待ってから fit → PTY spawn の順で実行
+    // fit しないと cols/rows がデフォルト(80x24)のままで表示が崩れる
+    await new Promise<void>((resolve) => {
+      requestAnimationFrame(() => {
+        try {
+          fitAddon.fit();
+        } catch {
+          // 初期化タイミングで失敗する場合がある
+        }
+        resolve();
+      });
     });
 
-    // PTY セッションを起動
+    // PTY セッションを起動（fit 後の正しい cols/rows を渡す）
     try {
       const sessionId = await terminalSpawn({
         cwd,
