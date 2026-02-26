@@ -4,6 +4,11 @@
 
 echo "🔍 デザインリグレッションチェック (Playwright screenshot tests)..."
 
+# Windows 環境で Node.js の PATH が通っていない場合に補完
+if [ -d "/c/Program Files/nodejs" ]; then
+  export PATH="$PATH:/c/Program Files/nodejs"
+fi
+
 # Node.js が必要
 if ! command -v node &> /dev/null; then
   echo "❌ Node.js が見つかりません。E2Eテストをスキップします。"
