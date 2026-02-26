@@ -1,7 +1,7 @@
 {
   "name": "tauri-filer",
   "private": true,
-  "version": "0.1.5",
+  "version": "0.1.6",
   "type": "module",
   "description": "Cross-platform desktop file manager built with Tauri 2 + React 19",
   "author": "win-chanma",

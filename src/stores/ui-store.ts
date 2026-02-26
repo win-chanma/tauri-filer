@@ -14,6 +14,8 @@ interface UISettings {
   terminalShellPath: string;
   terminalFontSize: number;
   terminalPadding: number;
+  windowTransparency: boolean;
+  windowOpacity: number;
 }
 
 interface UIStore extends UISettings {
@@ -26,6 +28,8 @@ interface UIStore extends UISettings {
   setTerminalShellPath: (path: string) => void;
   setTerminalFontSize: (size: number) => void;
   setTerminalPadding: (padding: number) => void;
+  setWindowTransparency: (enabled: boolean) => void;
+  setWindowOpacity: (opacity: number) => void;
 }
 
 const STORAGE_KEY = "tauri-filer-ui-settings";
@@ -53,6 +57,8 @@ const defaults: UISettings = {
   terminalShellPath: "",
   terminalFontSize: 14,
   terminalPadding: 8,
+  windowTransparency: false,
+  windowOpacity: 80,
 };
 
 const initial: UISettings = { ...defaults, ...loadSettings() };
@@ -68,11 +74,16 @@ function getSettings(state: UIStore): UISettings {
     terminalShellPath: state.terminalShellPath,
     terminalFontSize: state.terminalFontSize,
     terminalPadding: state.terminalPadding,
+    windowTransparency: state.windowTransparency,
+    windowOpacity: state.windowOpacity,
   };
 }
 
 // Apply theme immediately on module load to prevent FOUC
-applyTheme(getTheme(initial.themeId));
+applyTheme(
+  getTheme(initial.themeId),
+  initial.windowTransparency ? initial.windowOpacity / 100 : undefined,
+);
 
 export const useUIStore = create<UIStore>((set, get) => ({
   ...initial,
@@ -99,7 +110,11 @@ export const useUIStore = create<UIStore>((set, get) => ({
   setTheme: (themeId) => {
     set({ themeId });
     saveSettings(getSettings(get()));
-    applyTheme(getTheme(themeId));
+    const s = get();
+    applyTheme(
+      getTheme(themeId),
+      s.windowTransparency ? s.windowOpacity / 100 : undefined,
+    );
   },
   toggleTerminal: () => {
     set((s) => ({ terminalVisible: !s.terminalVisible }));
@@ -116,5 +131,23 @@ export const useUIStore = create<UIStore>((set, get) => ({
   setTerminalPadding: (padding) => {
     set({ terminalPadding: padding });
     saveSettings(getSettings(get()));
+  },
+  setWindowTransparency: (enabled) => {
+    set({ windowTransparency: enabled });
+    saveSettings(getSettings(get()));
+    const s = get();
+    applyTheme(
+      getTheme(s.themeId),
+      enabled ? s.windowOpacity / 100 : undefined,
+    );
+  },
+  setWindowOpacity: (opacity) => {
+    set({ windowOpacity: opacity });
+    saveSettings(getSettings(get()));
+    const s = get();
+    applyTheme(
+      getTheme(s.themeId),
+      s.windowTransparency ? opacity / 100 : undefined,
+    );
   },
 }));
