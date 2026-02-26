@@ -15,6 +15,7 @@ import {
   moveItems,
   openFile,
 } from "../commands/fs-commands";
+import { buildContextMenuItems } from "../utils/context-menu-items";
 import { useKeyboardShortcuts } from "../hooks/use-keyboard-shortcuts";
 import { TabBar } from "./TabBar";
 import { Toolbar } from "./Toolbar";
@@ -160,52 +161,24 @@ export function AppLayout() {
   const hasSelection = selectedPaths.size > 0;
   const hasClipboard = clipboardPaths.length > 0;
 
-  const contextMenuItems = [
-    ...(hasSelection
-      ? [
-          {
-            label: t("context.open"),
-            onClick: () => {
-              const entry = getSelectedEntry();
-              if (entry) handleFileOpen(entry);
-            },
-          },
-        ]
-      : []),
-    ...(selectedEntry && !selectedEntry.isDir
-      ? [
-          {
-            label: t("context.preview"),
-            onClick: () => setPreviewEntry(selectedEntry),
-          },
-        ]
-      : []),
-    ...(hasSelection
-      ? [
-          { label: t("context.copy"), shortcut: "Ctrl+C", onClick: () => clipboardCopy(Array.from(selectedPaths)) },
-          { label: t("context.cut"), shortcut: "Ctrl+X", onClick: () => clipboardCut(Array.from(selectedPaths)) },
-        ]
-      : []),
-    ...(hasClipboard
-      ? [{ label: t("context.paste"), shortcut: "Ctrl+V", onClick: handlePaste }]
-      : []),
-    { separator: true, label: "", onClick: () => {} },
-    { label: t("context.newFolder"), shortcut: "Ctrl+Shift+N", onClick: () => setNewFolderOpen(true) },
-    ...(selectedPaths.size === 1
-      ? [{ label: t("context.rename"), shortcut: "F2", onClick: () => setRenameOpen(true) }]
-      : []),
-    ...(hasSelection
-      ? [
-          { separator: true, label: "", onClick: () => {} },
-          {
-            label: t("context.delete"),
-            shortcut: "Del",
-            danger: true,
-            onClick: () => setDeleteOpen(true),
-          },
-        ]
-      : []),
-  ];
+  const contextMenuItems = buildContextMenuItems({
+    t,
+    hasSelection,
+    selectedEntry,
+    selectedCount: selectedPaths.size,
+    hasClipboard,
+    onOpen: () => {
+      const entry = getSelectedEntry();
+      if (entry) handleFileOpen(entry);
+    },
+    onPreview: () => setPreviewEntry(selectedEntry),
+    onCopy: () => clipboardCopy(Array.from(selectedPaths)),
+    onCut: () => clipboardCut(Array.from(selectedPaths)),
+    onPaste: handlePaste,
+    onNewFolder: () => setNewFolderOpen(true),
+    onRename: () => setRenameOpen(true),
+    onDelete: () => setDeleteOpen(true),
+  });
 
   return (
     <div className="flex flex-col h-screen bg-[var(--color-bg)] text-[var(--color-text)]">
