@@ -17,7 +17,13 @@ vi.mock("./use-navigation", () => ({
 
 function fireMouseUp(button: number) {
   const event = new MouseEvent("mouseup", { button, bubbles: true });
-  // preventDefault をスパイ
+  const preventDefaultSpy = vi.spyOn(event, "preventDefault");
+  window.dispatchEvent(event);
+  return { preventDefaultSpy };
+}
+
+function fireMouseDown(button: number) {
+  const event = new MouseEvent("mousedown", { button, bubbles: true });
   const preventDefaultSpy = vi.spyOn(event, "preventDefault");
   window.dispatchEvent(event);
   return { preventDefaultSpy };
@@ -65,6 +71,24 @@ describe("useMouseNavigation", () => {
     fireMouseUp(2);
     expect(mockBack).not.toHaveBeenCalled();
     expect(mockForward).not.toHaveBeenCalled();
+  });
+
+  it("mousedown の戻るボタンで preventDefault が呼ばれる（ブラウザナビゲーション抑制）", () => {
+    renderHook(() => useMouseNavigation());
+    const { preventDefaultSpy } = fireMouseDown(3);
+    expect(preventDefaultSpy).toHaveBeenCalled();
+  });
+
+  it("mousedown の進むボタンで preventDefault が呼ばれる（ブラウザナビゲーション抑制）", () => {
+    renderHook(() => useMouseNavigation());
+    const { preventDefaultSpy } = fireMouseDown(4);
+    expect(preventDefaultSpy).toHaveBeenCalled();
+  });
+
+  it("mousedown の左クリックでは preventDefault しない", () => {
+    renderHook(() => useMouseNavigation());
+    const { preventDefaultSpy } = fireMouseDown(0);
+    expect(preventDefaultSpy).not.toHaveBeenCalled();
   });
 
   it("アンマウント後はイベントリスナーが解除される", () => {

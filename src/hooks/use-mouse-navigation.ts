@@ -5,7 +5,7 @@ export function useMouseNavigation() {
   const { back, forward } = useNavigation();
 
   useEffect(() => {
-    const handler = (e: MouseEvent) => {
+    const handleMouseUp = (e: MouseEvent) => {
       if (e.button === 3) {
         e.preventDefault();
         back();
@@ -15,7 +15,18 @@ export function useMouseNavigation() {
       }
     };
 
-    window.addEventListener("mouseup", handler);
-    return () => window.removeEventListener("mouseup", handler);
+    // mousedown でも preventDefault してブラウザのデフォルトナビゲーションを抑制
+    const handleMouseDown = (e: MouseEvent) => {
+      if (e.button === 3 || e.button === 4) {
+        e.preventDefault();
+      }
+    };
+
+    window.addEventListener("mouseup", handleMouseUp);
+    window.addEventListener("mousedown", handleMouseDown);
+    return () => {
+      window.removeEventListener("mouseup", handleMouseUp);
+      window.removeEventListener("mousedown", handleMouseDown);
+    };
   }, [back, forward]);
 }
