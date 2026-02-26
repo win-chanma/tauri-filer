@@ -1,10 +1,11 @@
 import { create } from "zustand";
 import type { TabState } from "../types";
+import { getParentPath, getPathLabel, isRootPath } from "../utils/path";
 
 let nextTabId = 1;
 
 function createTab(path: string): TabState {
-  const label = path.split("/").filter(Boolean).pop() || "/";
+  const label = getPathLabel(path);
   return {
     id: String(nextTabId++),
     path,
@@ -27,6 +28,7 @@ interface TabStore {
   goUp: () => void;
   canGoBack: () => boolean;
   canGoForward: () => boolean;
+  canGoUp: () => boolean;
 }
 
 export const useTabStore = create<TabStore>((set, get) => ({
@@ -65,7 +67,7 @@ export const useTabStore = create<TabStore>((set, get) => ({
         if (tab.id !== s.activeTabId) return tab;
         const newHistory = tab.history.slice(0, tab.historyIndex + 1);
         newHistory.push(path);
-        const label = path.split("/").filter(Boolean).pop() || "/";
+        const label = getPathLabel(path);
         return {
           ...tab,
           path,
@@ -84,7 +86,7 @@ export const useTabStore = create<TabStore>((set, get) => ({
         if (tab.historyIndex <= 0) return tab;
         const newIndex = tab.historyIndex - 1;
         const path = tab.history[newIndex];
-        const label = path.split("/").filter(Boolean).pop() || "/";
+        const label = getPathLabel(path);
         return { ...tab, path, label, historyIndex: newIndex };
       }),
     }));
@@ -97,7 +99,7 @@ export const useTabStore = create<TabStore>((set, get) => ({
         if (tab.historyIndex >= tab.history.length - 1) return tab;
         const newIndex = tab.historyIndex + 1;
         const path = tab.history[newIndex];
-        const label = path.split("/").filter(Boolean).pop() || "/";
+        const label = getPathLabel(path);
         return { ...tab, path, label, historyIndex: newIndex };
       }),
     }));
@@ -106,8 +108,9 @@ export const useTabStore = create<TabStore>((set, get) => ({
   goUp: () => {
     const { tabs, activeTabId, navigate } = get();
     const tab = tabs.find((t) => t.id === activeTabId);
-    if (!tab || tab.path === "/") return;
-    const parent = tab.path.replace(/\/[^/]+\/?$/, "") || "/";
+    if (!tab) return;
+    const parent = getParentPath(tab.path);
+    if (parent === null) return;
     navigate(parent);
   },
 
@@ -121,5 +124,11 @@ export const useTabStore = create<TabStore>((set, get) => ({
     const { tabs, activeTabId } = get();
     const tab = tabs.find((t) => t.id === activeTabId);
     return !!tab && tab.historyIndex < tab.history.length - 1;
+  },
+
+  canGoUp: () => {
+    const { tabs, activeTabId } = get();
+    const tab = tabs.find((t) => t.id === activeTabId);
+    return !!tab && !isRootPath(tab.path);
   },
 }));

@@ -30,6 +30,16 @@ describe("tabStore", () => {
       expect(useTabStore.getState().tabs[0].label).toBe("/");
     });
 
+    it("Windows パスからラベルを導出する", () => {
+      useTabStore.getState().addTab("C:\\Users\\foo\\bar");
+      expect(useTabStore.getState().tabs[0].label).toBe("bar");
+    });
+
+    it("Windows ドライブルートのラベルは 'C:\\'", () => {
+      useTabStore.getState().addTab("C:\\");
+      expect(useTabStore.getState().tabs[0].label).toBe("C:\\");
+    });
+
     it("履歴が初期化される", () => {
       useTabStore.getState().addTab("/home");
       const tab = useTabStore.getState().tabs[0];
@@ -146,6 +156,54 @@ describe("tabStore", () => {
       useTabStore.getState().addTab("/");
       useTabStore.getState().goUp();
       expect(getActiveTab()!.path).toBe("/");
+    });
+
+    it("Windows パスで親ディレクトリに移動する", () => {
+      useTabStore.getState().addTab("C:\\Users\\foo\\bar");
+      useTabStore.getState().goUp();
+      expect(getActiveTab()!.path).toBe("C:\\Users\\foo");
+    });
+
+    it("Windows ドライブルートで何もしない", () => {
+      useTabStore.getState().addTab("C:\\");
+      useTabStore.getState().goUp();
+      expect(getActiveTab()!.path).toBe("C:\\");
+    });
+
+    it("Windows で2階層目からドライブルートに移動する", () => {
+      useTabStore.getState().addTab("C:\\Users");
+      useTabStore.getState().goUp();
+      expect(getActiveTab()!.path).toBe("C:\\");
+    });
+
+    it("goUp で履歴に追加される", () => {
+      useTabStore.getState().addTab("/home/user/docs");
+      useTabStore.getState().goUp();
+      const tab = getActiveTab()!;
+      expect(tab.history).toEqual(["/home/user/docs", "/home/user"]);
+      expect(tab.historyIndex).toBe(1);
+    });
+  });
+
+  describe("canGoUp", () => {
+    it("ルートでは false", () => {
+      useTabStore.getState().addTab("/");
+      expect(useTabStore.getState().canGoUp()).toBe(false);
+    });
+
+    it("非ルートでは true", () => {
+      useTabStore.getState().addTab("/home/user");
+      expect(useTabStore.getState().canGoUp()).toBe(true);
+    });
+
+    it("Windows ドライブルートでは false", () => {
+      useTabStore.getState().addTab("C:\\");
+      expect(useTabStore.getState().canGoUp()).toBe(false);
+    });
+
+    it("Windows 非ルートでは true", () => {
+      useTabStore.getState().addTab("C:\\Users");
+      expect(useTabStore.getState().canGoUp()).toBe(true);
     });
   });
 
