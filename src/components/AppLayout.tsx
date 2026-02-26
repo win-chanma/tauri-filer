@@ -212,7 +212,7 @@ export function AppLayout() {
             />
             {/* ターミナルペイン */}
             <div style={{ width: terminalWidth }} className="shrink-0">
-              <TerminalPane cwd={activeTabPath ?? "/"} />
+              <TerminalPane cwd={activeTabPath ?? "/"} width={terminalWidth} />
             </div>
           </>
         )}

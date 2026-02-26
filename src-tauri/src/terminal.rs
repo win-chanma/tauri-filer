@@ -84,6 +84,11 @@ pub fn terminal_spawn(
         cmd.cwd(dir);
     }
 
+    // Claude Code のネストセッション検出を回避するため環境変数を除去
+    for key in &["CLAUDECODE", "CLAUDE_CODE"] {
+        cmd.env_remove(key);
+    }
+
     pair.slave
         .spawn_command(cmd)
         .map_err(|e| format!("シェル起動失敗: {}", e))?;

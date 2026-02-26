@@ -14,6 +14,7 @@ import { X } from "lucide-react";
 
 interface TerminalPaneProps {
   cwd: string;
+  width?: number;
 }
 
 interface TerminalOutputPayload {
@@ -21,7 +22,7 @@ interface TerminalOutputPayload {
   data: string;
 }
 
-export function TerminalPane({ cwd }: TerminalPaneProps) {
+export function TerminalPane({ cwd, width }: TerminalPaneProps) {
   const { t } = useTranslation();
   const termRef = useRef<HTMLDivElement>(null);
   const xtermRef = useRef<Terminal | null>(null);
@@ -49,7 +50,6 @@ export function TerminalPane({ cwd }: TerminalPaneProps) {
         foreground: fgColor,
       },
       cursorBlink: true,
-      convertEol: true,
     });
 
     const fitAddon = new FitAddon();
@@ -131,16 +131,29 @@ export function TerminalPane({ cwd }: TerminalPaneProps) {
   // ウィンドウリサイズ時に fit を再実行
   useEffect(() => {
     const handleResize = () => {
-      try {
-        fitAddonRef.current?.fit();
-      } catch {
-        // fit が失敗する場合がある
-      }
+      requestAnimationFrame(() => {
+        try {
+          fitAddonRef.current?.fit();
+        } catch {
+          // fit が失敗する場合がある
+        }
+      });
     };
 
     window.addEventListener("resize", handleResize);
     return () => window.removeEventListener("resize", handleResize);
   }, []);
+
+  // ペイン幅変更時に fit を再実行（ドラッグリサイズ対応）
+  useEffect(() => {
+    requestAnimationFrame(() => {
+      try {
+        fitAddonRef.current?.fit();
+      } catch {
+        // fit が失敗する場合がある
+      }
+    });
+  }, [width]);
 
   return (
     <div className="flex flex-col h-full bg-[var(--color-bg-deep)] border-l border-[var(--color-border)]">
