@@ -9,11 +9,12 @@ import {
   Monitor,
   Globe,
   Palette,
+  TerminalSquare,
 } from "lucide-react";
 import type { Language, ThemeId } from "../types";
 import { themeList } from "../themes";
 
-type SectionId = "display" | "theme" | "language";
+type SectionId = "display" | "theme" | "language" | "terminal";
 
 interface SettingsDialogProps {
   open: boolean;
@@ -32,6 +33,10 @@ export function SettingsDialog({ open, onClose }: SettingsDialogProps) {
   const setLanguage = useUIStore((s) => s.setLanguage);
   const themeId = useUIStore((s) => s.themeId);
   const setTheme = useUIStore((s) => s.setTheme);
+  const terminalShellPath = useUIStore((s) => s.terminalShellPath);
+  const setTerminalShellPath = useUIStore((s) => s.setTerminalShellPath);
+  const terminalFontSize = useUIStore((s) => s.terminalFontSize);
+  const setTerminalFontSize = useUIStore((s) => s.setTerminalFontSize);
   const dialogRef = useRef<HTMLDivElement>(null);
   const [activeSection, setActiveSection] = useState<SectionId>("display");
 
@@ -59,6 +64,11 @@ export function SettingsDialog({ open, onClose }: SettingsDialogProps) {
       id: "language",
       label: t("settings.sectionLanguage"),
       icon: <Globe size={16} />,
+    },
+    {
+      id: "terminal",
+      label: t("settings.sectionTerminal"),
+      icon: <TerminalSquare size={16} />,
     },
   ];
 
@@ -194,6 +204,42 @@ export function SettingsDialog({ open, onClose }: SettingsDialogProps) {
                   <LanguageSelect
                     value={language}
                     onChange={(lang) => setLanguage(lang)}
+                  />
+                </SettingRow>
+              </SettingsPane>
+            )}
+
+            {activeSection === "terminal" && (
+              <SettingsPane title={t("settings.sectionTerminal")}>
+                <SettingRow
+                  label={t("settings.terminalShellPath")}
+                  description={t("settings.terminalShellPathDesc")}
+                >
+                  <input
+                    type="text"
+                    value={terminalShellPath}
+                    onChange={(e) => setTerminalShellPath(e.target.value)}
+                    placeholder={t("settings.terminalShellPathPlaceholder")}
+                    className="w-[200px] h-9 bg-[var(--color-bg)] border border-[var(--color-border)] rounded-lg px-3.5 text-[13px] font-medium text-[var(--color-text)] hover:border-[var(--color-text-muted)] focus:ring-2 focus:ring-[var(--color-accent)]/20 focus:border-[var(--color-accent)] focus:outline-none transition-colors"
+                  />
+                </SettingRow>
+
+                <SettingRow
+                  label={t("settings.terminalFontSize")}
+                  description={t("settings.terminalFontSizeDesc")}
+                >
+                  <input
+                    type="number"
+                    value={terminalFontSize}
+                    onChange={(e) => {
+                      const val = parseInt(e.target.value, 10);
+                      if (val >= 8 && val <= 32) {
+                        setTerminalFontSize(val);
+                      }
+                    }}
+                    min={8}
+                    max={32}
+                    className="w-[80px] h-9 bg-[var(--color-bg)] border border-[var(--color-border)] rounded-lg px-3.5 text-[13px] font-medium text-[var(--color-text)] hover:border-[var(--color-text-muted)] focus:ring-2 focus:ring-[var(--color-accent)]/20 focus:border-[var(--color-accent)] focus:outline-none transition-colors text-center"
                   />
                 </SettingRow>
               </SettingsPane>

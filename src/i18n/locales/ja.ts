@@ -90,4 +90,18 @@ export const ja = {
 
   // FileRow
   "fileRow.noSize": "---",
+
+  // Terminal
+  "terminal.title": "ターミナル",
+  "terminal.close": "ターミナルを閉じる",
+  "toolbar.toggleTerminal": "ターミナルの切替",
+
+  // Settings - Terminal
+  "settings.sectionTerminal": "ターミナル",
+  "settings.terminalShellPath": "シェルパス",
+  "settings.terminalShellPathDesc":
+    "使用するシェルのパスを指定します（空欄でOS標準シェル）",
+  "settings.terminalShellPathPlaceholder": "例: pwsh.exe",
+  "settings.terminalFontSize": "フォントサイズ",
+  "settings.terminalFontSizeDesc": "ターミナルのフォントサイズを設定します",
 } as const;

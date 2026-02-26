@@ -1,4 +1,4 @@
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState, useCallback, useRef } from "react";
 import { useTranslation } from "react-i18next";
 import { useTabStore } from "../stores/tab-store";
 import { useFileStore } from "../stores/file-store";
@@ -32,6 +32,7 @@ import { DeleteConfirmDialog } from "./DeleteConfirmDialog";
 import { SearchDialog } from "./SearchDialog";
 import { FilePreviewDialog } from "./FilePreviewDialog";
 import { SettingsDialog } from "./SettingsDialog";
+import { TerminalPane } from "./TerminalPane";
 import { EmptyState } from "./EmptyState";
 import { Spinner } from "./Spinner";
 import type { FileEntry } from "../types";
@@ -48,6 +49,7 @@ export function AppLayout() {
   const clearSelection = useFileStore((s) => s.clearSelection);
   const sidebarVisible = useUIStore((s) => s.sidebarVisible);
   const viewMode = useUIStore((s) => s.viewMode);
+  const terminalVisible = useUIStore((s) => s.terminalVisible);
   const clipboardCopy = useClipboardStore((s) => s.copy);
   const clipboardCut = useClipboardStore((s) => s.cut);
   const clipboardPaths = useClipboardStore((s) => s.paths);
@@ -62,6 +64,8 @@ export function AppLayout() {
   const [searchOpen, setSearchOpen] = useState(false);
   const [previewEntry, setPreviewEntry] = useState<FileEntry | null>(null);
   const [settingsOpen, setSettingsOpen] = useState(false);
+  const [terminalWidth, setTerminalWidth] = useState(400);
+  const isDraggingRef = useRef(false);
 
   const { menu, show: showContextMenu, hide: hideContextMenu } = useContextMenu();
 
@@ -79,6 +83,44 @@ export function AppLayout() {
   });
 
   useMouseNavigation();
+
+  // アクティブタブのパスを取得（ターミナルの cwd に使用）
+  const activeTabPath = useTabStore((s) => {
+    const tab = s.tabs.find((t) => t.id === s.activeTabId);
+    return tab?.path ?? null;
+  });
+
+  // ターミナルペインのドラッグリサイズ
+  const handleResizeMouseDown = useCallback(
+    (e: React.MouseEvent) => {
+      e.preventDefault();
+      isDraggingRef.current = true;
+      const startX = e.clientX;
+      const startWidth = terminalWidth;
+
+      const handleMouseMove = (ev: MouseEvent) => {
+        if (!isDraggingRef.current) return;
+        const delta = startX - ev.clientX;
+        const maxWidth = Math.floor(window.innerWidth * 0.5);
+        const newWidth = Math.max(200, Math.min(maxWidth, startWidth + delta));
+        setTerminalWidth(newWidth);
+      };
+
+      const handleMouseUp = () => {
+        isDraggingRef.current = false;
+        document.removeEventListener("mousemove", handleMouseMove);
+        document.removeEventListener("mouseup", handleMouseUp);
+        document.body.style.cursor = "";
+        document.body.style.userSelect = "";
+      };
+
+      document.addEventListener("mousemove", handleMouseMove);
+      document.addEventListener("mouseup", handleMouseUp);
+      document.body.style.cursor = "col-resize";
+      document.body.style.userSelect = "none";
+    },
+    [terminalWidth]
+  );
 
   useEffect(() => {
     if (tabs.length === 0) {
@@ -162,6 +204,21 @@ export function AppLayout() {
               : <GridView onContextMenu={showContextMenu} onFileOpen={handleFileOpen} />
           )}
         </main>
+        {/* ターミナルペイン（常にマウント、CSS で表示/非表示） */}
+        <div
+          className={`flex shrink-0 ${terminalVisible ? "" : "hidden"}`}
+          style={{ width: terminalVisible ? terminalWidth : 0 }}
+        >
+          {/* ドラッグリサイザー */}
+          <div
+            className="w-1 cursor-col-resize bg-[var(--color-border)] hover:bg-[var(--color-accent)] transition-colors shrink-0"
+            onMouseDown={handleResizeMouseDown}
+          />
+          {/* ターミナル本体 */}
+          <div className="flex-1 min-w-0">
+            <TerminalPane cwd={activeTabPath ?? "/"} width={terminalWidth} />
+          </div>
+        </div>
       </div>
       <StatusBar />
 
