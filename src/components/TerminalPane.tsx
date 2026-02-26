@@ -2,6 +2,7 @@ import { useEffect, useRef, useCallback } from "react";
 import { useTranslation } from "react-i18next";
 import { Terminal } from "@xterm/xterm";
 import { FitAddon } from "@xterm/addon-fit";
+import { WebglAddon } from "@xterm/addon-webgl";
 import { listen } from "@tauri-apps/api/event";
 import { useUIStore } from "../stores/ui-store";
 import {
@@ -77,6 +78,17 @@ export function TerminalPane({ cwd, width }: TerminalPaneProps) {
     const fitAddon = new FitAddon();
     term.loadAddon(fitAddon);
     term.open(termRef.current);
+
+    // WebGL レンダラーで GPU アクセラレーション（Canvas よりシャープで高速）
+    try {
+      const webglAddon = new WebglAddon();
+      webglAddon.onContextLoss(() => {
+        webglAddon.dispose();
+      });
+      term.loadAddon(webglAddon);
+    } catch {
+      // WebGL2 非対応環境では Canvas フォールバック
+    }
 
     xtermRef.current = term;
     fitAddonRef.current = fitAddon;

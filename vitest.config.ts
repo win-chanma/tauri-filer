@@ -14,6 +14,7 @@ export default defineConfig({
       "@xterm/xterm/css/xterm.css": path.resolve(__dirname, "src/__mocks__/@xterm/xterm-css.ts"),
       "@xterm/xterm": path.resolve(__dirname, "src/__mocks__/@xterm/xterm.ts"),
       "@xterm/addon-fit": path.resolve(__dirname, "src/__mocks__/@xterm/addon-fit.ts"),
+      "@xterm/addon-webgl": path.resolve(__dirname, "src/__mocks__/@xterm/addon-webgl.ts"),
     },
   },
 });
