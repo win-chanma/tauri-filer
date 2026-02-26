@@ -1,0 +1,28 @@
+#!/bin/bash
+# pre-push hook: Playwright スクリーンショットテストでデザインリグレッションをチェック
+# スキップしたい場合: git push --no-verify
+
+echo "🔍 デザインリグレッションチェック (Playwright screenshot tests)..."
+
+# Node.js が必要
+if ! command -v node &> /dev/null; then
+  echo "❌ Node.js が見つかりません。E2Eテストをスキップします。"
+  echo "   インストール: winget install OpenJS.NodeJS.LTS"
+  exit 0
+fi
+
+# スクリーンショットテスト実行
+npx playwright test e2e/screenshots.spec.ts 2>&1
+RESULT=$?
+
+if [ $RESULT -ne 0 ]; then
+  echo ""
+  echo "❌ スクリーンショットテストが失敗しました。"
+  echo "   デザインに変更がある場合はベースラインを更新してください:"
+  echo "   npx playwright test e2e/screenshots.spec.ts --update-snapshots"
+  echo ""
+  echo "   スキップする場合: git push --no-verify"
+  exit 1
+fi
+
+echo "✅ デザインリグレッションチェック通過"
