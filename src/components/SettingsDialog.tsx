@@ -39,6 +39,10 @@ export function SettingsDialog({ open, onClose }: SettingsDialogProps) {
   const setTerminalFontSize = useUIStore((s) => s.setTerminalFontSize);
   const terminalPadding = useUIStore((s) => s.terminalPadding);
   const setTerminalPadding = useUIStore((s) => s.setTerminalPadding);
+  const windowTransparency = useUIStore((s) => s.windowTransparency);
+  const setWindowTransparency = useUIStore((s) => s.setWindowTransparency);
+  const windowOpacity = useUIStore((s) => s.windowOpacity);
+  const setWindowOpacity = useUIStore((s) => s.setWindowOpacity);
   const dialogRef = useRef<HTMLDivElement>(null);
   const [activeSection, setActiveSection] = useState<SectionId>("display");
 
@@ -89,7 +93,7 @@ export function SettingsDialog({ open, onClose }: SettingsDialogProps) {
         onKeyDown={(e) => {
           if (e.key === "Escape") onClose();
         }}
-        className="bg-[var(--color-bg-card)] rounded-xl w-[800px] max-w-[90vw] h-[520px] max-h-[85vh] flex flex-col shadow-2xl shadow-black/40 animate-[dialog-in_200ms_ease-out] outline-none"
+        className="bg-[var(--color-bg-card-solid)] rounded-xl w-[800px] max-w-[90vw] h-[520px] max-h-[85vh] flex flex-col shadow-2xl shadow-black/40 animate-[dialog-in_200ms_ease-out] outline-none"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}
@@ -177,6 +181,40 @@ export function SettingsDialog({ open, onClose }: SettingsDialogProps) {
                     />
                   </SegmentedControl>
                 </SettingRow>
+
+                <SettingRow
+                  label={t("settings.windowTransparency")}
+                  description={t("settings.windowTransparencyDesc")}
+                >
+                  <ToggleSwitch
+                    checked={windowTransparency}
+                    onChange={() => setWindowTransparency(!windowTransparency)}
+                    aria-label="Window transparency"
+                  />
+                </SettingRow>
+
+                {windowTransparency && (
+                  <SettingRow
+                    label={t("settings.windowOpacity")}
+                    description={t("settings.windowOpacityDesc")}
+                  >
+                    <div className="flex items-center gap-3">
+                      <input
+                        type="range"
+                        min={30}
+                        max={100}
+                        value={windowOpacity}
+                        onChange={(e) =>
+                          setWindowOpacity(parseInt(e.target.value, 10))
+                        }
+                        className="w-[120px] accent-[var(--color-accent)]"
+                      />
+                      <span className="text-[13px] font-medium text-[var(--color-text)] w-[36px] text-right tabular-nums">
+                        {windowOpacity}%
+                      </span>
+                    </div>
+                  </SettingRow>
+                )}
               </SettingsPane>
             )}
 

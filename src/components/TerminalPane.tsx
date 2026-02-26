@@ -12,6 +12,7 @@ import {
   terminalKill,
 } from "../commands/terminal-commands";
 import { X } from "lucide-react";
+import { hexToRgba } from "../themes/apply-theme";
 
 interface TerminalPaneProps {
   cwd: string;
@@ -21,6 +22,17 @@ interface TerminalPaneProps {
 interface TerminalOutputPayload {
   session_id: number;
   data: string;
+}
+
+function resolveTerminalBgColor(transparency: boolean, opacity: number): string {
+  const styles = getComputedStyle(document.documentElement);
+  const raw = styles.getPropertyValue("--color-bg-deep-solid").trim()
+    || styles.getPropertyValue("--color-bg-deep").trim()
+    || "#1e1e1e";
+  if (transparency && raw.startsWith("#")) {
+    return hexToRgba(raw, opacity / 100);
+  }
+  return raw;
 }
 
 export function TerminalPane({ cwd, width }: TerminalPaneProps) {
@@ -36,6 +48,8 @@ export function TerminalPane({ cwd, width }: TerminalPaneProps) {
   const terminalShellPath = useUIStore((s) => s.terminalShellPath);
   const terminalVisible = useUIStore((s) => s.terminalVisible);
   const toggleTerminal = useUIStore((s) => s.toggleTerminal);
+  const windowTransparency = useUIStore((s) => s.windowTransparency);
+  const windowOpacity = useUIStore((s) => s.windowOpacity);
 
   const initTerminal = useCallback(async () => {
     if (!termRef.current) return;
@@ -44,14 +58,16 @@ export function TerminalPane({ cwd, width }: TerminalPaneProps) {
     const styles = getComputedStyle(document.documentElement);
     const bgColor = styles.getPropertyValue("--color-bg-deep").trim() || "#1e1e1e";
     const fgColor = styles.getPropertyValue("--color-text").trim() || "#d4d4d4";
-
     const cursorColor = styles.getPropertyValue("--color-accent").trim() || "#6366f1";
 
+    const termBgColor = resolveTerminalBgColor(windowTransparency, windowOpacity);
+
     const term = new Terminal({
+      allowTransparency: true,
       fontSize: terminalFontSize,
       fontFamily: "'Cascadia Code', 'Consolas', 'Courier New', monospace",
       theme: {
-        background: bgColor,
+        background: termBgColor,
         foreground: fgColor,
         cursor: cursorColor,
         cursorAccent: bgColor,
@@ -82,16 +98,19 @@ export function TerminalPane({ cwd, width }: TerminalPaneProps) {
     term.open(termRef.current);
 
     // WebGL レンダラーで GPU アクセラレーション（Canvas よりシャープで高速）
-    try {
-      const webglAddon = new WebglAddon();
-      webglAddon.onContextLoss(() => {
-        try { webglAddon.dispose(); } catch { /* ignore */ }
-        webglAddonRef.current = null;
-      });
-      term.loadAddon(webglAddon);
-      webglAddonRef.current = webglAddon;
-    } catch {
-      // WebGL2 非対応環境では Canvas フォールバック
+    // ただし WebGL は allowTransparency をサポートしないため、透過ON時は Canvas を使う
+    if (!windowTransparency) {
+      try {
+        const webglAddon = new WebglAddon();
+        webglAddon.onContextLoss(() => {
+          try { webglAddon.dispose(); } catch { /* ignore */ }
+          webglAddonRef.current = null;
+        });
+        term.loadAddon(webglAddon);
+        webglAddonRef.current = webglAddon;
+      } catch {
+        // WebGL2 非対応環境では Canvas フォールバック
+      }
     }
 
     xtermRef.current = term;
@@ -148,7 +167,7 @@ export function TerminalPane({ cwd, width }: TerminalPaneProps) {
       console.error("ターミナル起動失敗:", err);
       term.write(`\r\nターミナル起動失敗: ${err}\r\n`);
     }
-  }, [cwd, terminalFontSize, terminalShellPath]);
+  }, [cwd, terminalShellPath]);
 
   useEffect(() => {
     initTerminal();
@@ -174,6 +193,46 @@ export function TerminalPane({ cwd, width }: TerminalPaneProps) {
       }
     };
   }, [initTerminal]);
+
+  // フォントサイズ変更を PTY 再起動なしで反映
+  useEffect(() => {
+    const term = xtermRef.current;
+    if (!term) return;
+    term.options.fontSize = terminalFontSize;
+    requestAnimationFrame(() => {
+      try {
+        fitAddonRef.current?.fit();
+      } catch { /* ignore */ }
+    });
+  }, [terminalFontSize]);
+
+  // 透過設定の変更を PTY 再起動なしで反映
+  useEffect(() => {
+    const term = xtermRef.current;
+    if (!term) return;
+    const bg = resolveTerminalBgColor(windowTransparency, windowOpacity);
+    term.options.theme = { ...term.options.theme, background: bg };
+
+    // WebGL は allowTransparency 非対応 → 透過ON時は dispose、OFF時は再ロード
+    if (windowTransparency) {
+      if (webglAddonRef.current) {
+        try { webglAddonRef.current.dispose(); } catch { /* ignore */ }
+        webglAddonRef.current = null;
+      }
+    } else {
+      if (!webglAddonRef.current) {
+        try {
+          const webglAddon = new WebglAddon();
+          webglAddon.onContextLoss(() => {
+            try { webglAddon.dispose(); } catch { /* ignore */ }
+            webglAddonRef.current = null;
+          });
+          term.loadAddon(webglAddon);
+          webglAddonRef.current = webglAddon;
+        } catch { /* ignore */ }
+      }
+    }
+  }, [windowTransparency, windowOpacity]);
 
   // ウィンドウリサイズ時に fit を再実行
   useEffect(() => {

@@ -106,4 +106,10 @@ export const ja = {
   "settings.terminalFontSizeDesc": "ターミナルのフォントサイズを設定します",
   "settings.terminalPadding": "内側の余白",
   "settings.terminalPaddingDesc": "ターミナル描画エリアの内側余白を設定します（px）",
+
+  // Settings - Display (transparency)
+  "settings.windowTransparency": "ウィンドウの透明化",
+  "settings.windowTransparencyDesc": "ウィンドウ背景を半透明にしてデスクトップを透かします",
+  "settings.windowOpacity": "不透明度",
+  "settings.windowOpacityDesc": "背景の不透明度を調整します（30〜100%）",
 } as const;

@@ -106,4 +106,10 @@ export const en = {
   "settings.terminalFontSizeDesc": "Set the terminal font size",
   "settings.terminalPadding": "Inner padding",
   "settings.terminalPaddingDesc": "Set the padding inside the terminal area (px)",
+
+  // Settings - Display (transparency)
+  "settings.windowTransparency": "Window transparency",
+  "settings.windowTransparencyDesc": "Make the window background semi-transparent",
+  "settings.windowOpacity": "Opacity",
+  "settings.windowOpacityDesc": "Adjust the background opacity (30–100%)",
 } as const;
