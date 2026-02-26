@@ -32,6 +32,7 @@ export function TerminalPane({ cwd, width }: TerminalPaneProps) {
   const unlistenRef = useRef<(() => void) | null>(null);
   const webglAddonRef = useRef<WebglAddon | null>(null);
   const terminalFontSize = useUIStore((s) => s.terminalFontSize);
+  const terminalPadding = useUIStore((s) => s.terminalPadding);
   const terminalShellPath = useUIStore((s) => s.terminalShellPath);
   const terminalVisible = useUIStore((s) => s.terminalVisible);
   const toggleTerminal = useUIStore((s) => s.toggleTerminal);
@@ -200,7 +201,7 @@ export function TerminalPane({ cwd, width }: TerminalPaneProps) {
         // fit が失敗する場合がある
       }
     });
-  }, [width, terminalVisible]);
+  }, [width, terminalVisible, terminalPadding]);
 
   return (
     <div className="flex flex-col h-full bg-[var(--color-bg-deep)]">
@@ -217,11 +218,12 @@ export function TerminalPane({ cwd, width }: TerminalPaneProps) {
           <X size={12} />
         </button>
       </div>
-      {/* xterm.js コンテナ */}
+      {/* xterm.js コンテナ（padding で端の余白を確保） */}
       <div
         ref={termRef}
         data-testid="terminal-container"
         className="flex-1 min-h-0 overflow-hidden"
+        style={{ padding: `${terminalPadding}px 0 0 ${terminalPadding}px` }}
       />
     </div>
   );

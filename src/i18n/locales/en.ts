@@ -104,4 +104,6 @@ export const en = {
   "settings.terminalShellPathPlaceholder": "e.g. pwsh.exe",
   "settings.terminalFontSize": "Font size",
   "settings.terminalFontSizeDesc": "Set the terminal font size",
+  "settings.terminalPadding": "Inner padding",
+  "settings.terminalPaddingDesc": "Set the padding inside the terminal area (px)",
 } as const;

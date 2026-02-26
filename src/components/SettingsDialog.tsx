@@ -37,6 +37,8 @@ export function SettingsDialog({ open, onClose }: SettingsDialogProps) {
   const setTerminalShellPath = useUIStore((s) => s.setTerminalShellPath);
   const terminalFontSize = useUIStore((s) => s.terminalFontSize);
   const setTerminalFontSize = useUIStore((s) => s.setTerminalFontSize);
+  const terminalPadding = useUIStore((s) => s.terminalPadding);
+  const setTerminalPadding = useUIStore((s) => s.setTerminalPadding);
   const dialogRef = useRef<HTMLDivElement>(null);
   const [activeSection, setActiveSection] = useState<SectionId>("display");
 
@@ -238,6 +240,25 @@ export function SettingsDialog({ open, onClose }: SettingsDialogProps) {
                       }
                     }}
                     min={8}
+                    max={32}
+                    className="w-[80px] h-9 bg-[var(--color-bg)] border border-[var(--color-border)] rounded-lg px-3.5 text-[13px] font-medium text-[var(--color-text)] hover:border-[var(--color-text-muted)] focus:ring-2 focus:ring-[var(--color-accent)]/20 focus:border-[var(--color-accent)] focus:outline-none transition-colors text-center"
+                  />
+                </SettingRow>
+
+                <SettingRow
+                  label={t("settings.terminalPadding")}
+                  description={t("settings.terminalPaddingDesc")}
+                >
+                  <input
+                    type="number"
+                    value={terminalPadding}
+                    onChange={(e) => {
+                      const val = parseInt(e.target.value, 10);
+                      if (val >= 0 && val <= 32) {
+                        setTerminalPadding(val);
+                      }
+                    }}
+                    min={0}
                     max={32}
                     className="w-[80px] h-9 bg-[var(--color-bg)] border border-[var(--color-border)] rounded-lg px-3.5 text-[13px] font-medium text-[var(--color-text)] hover:border-[var(--color-text-muted)] focus:ring-2 focus:ring-[var(--color-accent)]/20 focus:border-[var(--color-accent)] focus:outline-none transition-colors text-center"
                   />
