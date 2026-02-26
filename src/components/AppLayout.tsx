@@ -18,6 +18,7 @@ import {
 import { buildContextMenuItems } from "../utils/context-menu-items";
 import { createContextMenuHandlers } from "../utils/context-menu-handlers";
 import { useKeyboardShortcuts } from "../hooks/use-keyboard-shortcuts";
+import { useMouseNavigation } from "../hooks/use-mouse-navigation";
 import { TabBar } from "./TabBar";
 import { Toolbar } from "./Toolbar";
 import { Sidebar } from "./Sidebar";
@@ -76,6 +77,8 @@ export function AppLayout() {
     onDelete: () => setDeleteOpen(true),
     onSearch: () => setSearchOpen(true),
   });
+
+  useMouseNavigation();
 
   useEffect(() => {
     if (tabs.length === 0) {
