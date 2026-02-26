@@ -70,6 +70,16 @@ body {
   background: var(--color-text-muted);
 }
 
+/* xterm.js: Tailwind のリセットで内部 textarea が露出する問題を修正 */
+.xterm-helper-textarea {
+  position: absolute !important;
+  opacity: 0 !important;
+  resize: none !important;
+  overflow: hidden !important;
+  width: 1px !important;
+  height: 1px !important;
+}
+
 /* ダイアログアニメーション */
 @keyframes fade-in {
   from { opacity: 0; }
