@@ -10,6 +10,9 @@ interface UISettings {
   showHidden: boolean;
   language: Language;
   themeId: ThemeId;
+  terminalVisible: boolean;
+  terminalShellPath: string;
+  terminalFontSize: number;
 }
 
 interface UIStore extends UISettings {
@@ -18,6 +21,9 @@ interface UIStore extends UISettings {
   toggleHidden: () => void;
   setLanguage: (lang: Language) => void;
   setTheme: (themeId: ThemeId) => void;
+  toggleTerminal: () => void;
+  setTerminalShellPath: (path: string) => void;
+  setTerminalFontSize: (size: number) => void;
 }
 
 const STORAGE_KEY = "tauri-filer-ui-settings";
@@ -41,6 +47,9 @@ const defaults: UISettings = {
   showHidden: false,
   language: "ja",
   themeId: "default",
+  terminalVisible: false,
+  terminalShellPath: "",
+  terminalFontSize: 14,
 };
 
 const initial: UISettings = { ...defaults, ...loadSettings() };
@@ -52,6 +61,9 @@ function getSettings(state: UIStore): UISettings {
     showHidden: state.showHidden,
     language: state.language,
     themeId: state.themeId,
+    terminalVisible: state.terminalVisible,
+    terminalShellPath: state.terminalShellPath,
+    terminalFontSize: state.terminalFontSize,
   };
 }
 
@@ -84,5 +96,17 @@ export const useUIStore = create<UIStore>((set, get) => ({
     set({ themeId });
     saveSettings(getSettings(get()));
     applyTheme(getTheme(themeId));
+  },
+  toggleTerminal: () => {
+    set((s) => ({ terminalVisible: !s.terminalVisible }));
+    saveSettings(getSettings(get()));
+  },
+  setTerminalShellPath: (path) => {
+    set({ terminalShellPath: path });
+    saveSettings(getSettings(get()));
+  },
+  setTerminalFontSize: (size) => {
+    set({ terminalFontSize: size });
+    saveSettings(getSettings(get()));
   },
 }));

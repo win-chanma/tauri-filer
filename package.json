@@ -34,7 +34,9 @@
     "react-dom": "^19.1.0",
     "react-i18next": "^16.5.4",
     "react-virtuoso": "^4.18.1",
-    "zustand": "^5.0.11"
+    "zustand": "^5.0.11",
+    "@xterm/xterm": "^5.5.0",
+    "@xterm/addon-fit": "^0.10.0"
   },
   "devDependencies": {
     "@playwright/cli": "^0.1.1",

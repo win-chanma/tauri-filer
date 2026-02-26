@@ -90,4 +90,18 @@ export const en = {
 
   // FileRow
   "fileRow.noSize": "---",
+
+  // Terminal
+  "terminal.title": "Terminal",
+  "terminal.close": "Close terminal",
+  "toolbar.toggleTerminal": "Toggle terminal",
+
+  // Settings - Terminal
+  "settings.sectionTerminal": "Terminal",
+  "settings.terminalShellPath": "Shell path",
+  "settings.terminalShellPathDesc":
+    "Specify the shell to use (leave empty for OS default)",
+  "settings.terminalShellPathPlaceholder": "e.g. pwsh.exe",
+  "settings.terminalFontSize": "Font size",
+  "settings.terminalFontSizeDesc": "Set the terminal font size",
 } as const;

@@ -11,6 +11,9 @@ describe("uiStore", () => {
       sidebarVisible: true,
       showHidden: false,
       language: "ja",
+      terminalVisible: false,
+      terminalShellPath: "",
+      terminalFontSize: 14,
     });
   });
 
@@ -121,6 +124,65 @@ describe("uiStore", () => {
       const settings = loadSettings();
       expect(settings.viewMode).toBe("grid");
       expect(settings.sidebarVisible).toBeUndefined();
+    });
+  });
+
+  describe("toggleTerminal", () => {
+    it("初期状態は非表示", () => {
+      expect(useUIStore.getState().terminalVisible).toBe(false);
+    });
+
+    it("表示にする", () => {
+      useUIStore.getState().toggleTerminal();
+      expect(useUIStore.getState().terminalVisible).toBe(true);
+    });
+
+    it("再度トグルで非表示に戻る", () => {
+      useUIStore.getState().toggleTerminal();
+      useUIStore.getState().toggleTerminal();
+      expect(useUIStore.getState().terminalVisible).toBe(false);
+    });
+
+    it("toggleTerminalでlocalStorageに保存される", () => {
+      useUIStore.getState().toggleTerminal();
+      const stored = JSON.parse(localStorage.getItem(STORAGE_KEY)!);
+      expect(stored.terminalVisible).toBe(true);
+    });
+  });
+
+  describe("setTerminalShellPath", () => {
+    it("シェルパスを設定する", () => {
+      useUIStore.getState().setTerminalShellPath("pwsh.exe");
+      expect(useUIStore.getState().terminalShellPath).toBe("pwsh.exe");
+    });
+
+    it("空文字に戻す（デフォルト使用）", () => {
+      useUIStore.getState().setTerminalShellPath("pwsh.exe");
+      useUIStore.getState().setTerminalShellPath("");
+      expect(useUIStore.getState().terminalShellPath).toBe("");
+    });
+
+    it("setTerminalShellPathでlocalStorageに保存される", () => {
+      useUIStore.getState().setTerminalShellPath("/bin/zsh");
+      const stored = JSON.parse(localStorage.getItem(STORAGE_KEY)!);
+      expect(stored.terminalShellPath).toBe("/bin/zsh");
+    });
+  });
+
+  describe("setTerminalFontSize", () => {
+    it("初期値は14", () => {
+      expect(useUIStore.getState().terminalFontSize).toBe(14);
+    });
+
+    it("フォントサイズを変更する", () => {
+      useUIStore.getState().setTerminalFontSize(16);
+      expect(useUIStore.getState().terminalFontSize).toBe(16);
+    });
+
+    it("setTerminalFontSizeでlocalStorageに保存される", () => {
+      useUIStore.getState().setTerminalFontSize(12);
+      const stored = JSON.parse(localStorage.getItem(STORAGE_KEY)!);
+      expect(stored.terminalFontSize).toBe(12);
     });
   });
 });

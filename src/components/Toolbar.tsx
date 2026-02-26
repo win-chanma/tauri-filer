@@ -15,6 +15,7 @@ import {
   Eye,
   EyeOff,
   Settings,
+  TerminalSquare,
 } from "lucide-react";
 
 interface ToolbarProps {
@@ -32,6 +33,8 @@ export function Toolbar({ onSettingsOpen }: ToolbarProps) {
   const toggleSidebar = useUIStore((s) => s.toggleSidebar);
   const showHidden = useUIStore((s) => s.showHidden);
   const toggleHidden = useUIStore((s) => s.toggleHidden);
+  const terminalVisible = useUIStore((s) => s.terminalVisible);
+  const toggleTerminal = useUIStore((s) => s.toggleTerminal);
   const { back, forward, up, refresh } = useNavigation();
 
   return (
@@ -59,6 +62,13 @@ export function Toolbar({ onSettingsOpen }: ToolbarProps) {
 
       {/* Action group */}
       <div className="flex items-center gap-1">
+        <NavButton
+          onClick={toggleTerminal}
+          active={terminalVisible}
+          title={t("toolbar.toggleTerminal")}
+        >
+          <TerminalSquare size={18} />
+        </NavButton>
         {onSettingsOpen && (
           <NavButton onClick={onSettingsOpen} title={t("toolbar.settings")}>
             <Settings size={18} />
