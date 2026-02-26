@@ -1,4 +1,4 @@
-import { useEffect, useState, useCallback, useMemo } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { useTranslation } from "react-i18next";
 import { useTabStore } from "../stores/tab-store";
 import { useFileStore } from "../stores/file-store";
@@ -92,51 +92,29 @@ export function AppLayout() {
     }
   }, []);
 
-  const getActiveTabPath = useCallback(() => {
-    const tab = useTabStore.getState().tabs.find(
-      (t) => t.id === useTabStore.getState().activeTabId
-    );
-    return tab?.path ?? null;
-  }, []);
-
-  const getSelectedPaths = useCallback(
-    () => Array.from(selectedPaths),
-    [selectedPaths]
-  );
-
-  const handlers = useMemo(
-    () =>
-      createContextMenuHandlers({
-        getActiveTabPath,
-        getSelectedEntry,
-        getSelectedPaths,
-        navigateTo,
-        openFile,
-        createDirectory,
-        renameItem,
-        deleteItems,
-        copyItems,
-        moveItems,
-        clipboardPaths,
-        clipboardMode,
-        clipboardClear,
-        clearSelection,
-        refresh,
-      }),
-    [
-      getActiveTabPath,
+  const { handleFileOpen, handlePaste, handleCreateFolder, handleRename, handleDelete } =
+    createContextMenuHandlers({
+      getActiveTabPath: () => {
+        const tab = useTabStore.getState().tabs.find(
+          (t) => t.id === useTabStore.getState().activeTabId
+        );
+        return tab?.path ?? null;
+      },
       getSelectedEntry,
-      getSelectedPaths,
+      getSelectedPaths: () => Array.from(selectedPaths),
       navigateTo,
+      openFile,
+      createDirectory,
+      renameItem,
+      deleteItems,
+      copyItems,
+      moveItems,
       clipboardPaths,
       clipboardMode,
       clipboardClear,
       clearSelection,
       refresh,
-    ]
-  );
-
-  const { handleFileOpen, handlePaste, handleCreateFolder, handleRename, handleDelete } = handlers;
+    });
 
   const selectedEntry = getSelectedEntry();
   const hasSelection = selectedPaths.size > 0;
