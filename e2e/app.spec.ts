@@ -2,15 +2,15 @@ import { test, expect } from "@playwright/test";
 
 test("アプリのトップページが表示される", async ({ page }) => {
   await page.goto("/");
-  await expect(page).toHaveTitle(/tauri-filer/i);
+  await expect(page).toHaveTitle(/tauri.filer/i);
 });
 
 test("メインレイアウト要素が表示される", async ({ page }) => {
   await page.goto("/");
 
-  // Toolbar が表示される
-  const toolbar = page.locator("button", { hasText: /設定|Settings/ }).first();
-  await expect(toolbar).toBeVisible();
+  // Toolbar の設定ボタンが表示される（アイコンのみなので title 属性で特定）
+  const settingsButton = page.locator("button[title='設定'], button[title='Settings']");
+  await expect(settingsButton).toBeVisible();
 
   // StatusBar が表示される（項目数テキスト）
   const statusBar = page.getByText(/項目|items/);
