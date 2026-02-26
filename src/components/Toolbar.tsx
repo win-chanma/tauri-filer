@@ -25,6 +25,7 @@ export function Toolbar({ onSettingsOpen }: ToolbarProps) {
   const { t } = useTranslation();
   const canGoBack = useTabStore((s) => s.canGoBack);
   const canGoForward = useTabStore((s) => s.canGoForward);
+  const canGoUp = useTabStore((s) => s.canGoUp);
   const viewMode = useUIStore((s) => s.viewMode);
   const setViewMode = useUIStore((s) => s.setViewMode);
   const sidebarVisible = useUIStore((s) => s.sidebarVisible);
@@ -46,7 +47,7 @@ export function Toolbar({ onSettingsOpen }: ToolbarProps) {
         <NavButton onClick={forward} disabled={!canGoForward()} title={t("toolbar.forward")}>
           <ArrowRight size={18} />
         </NavButton>
-        <NavButton onClick={up} title={t("toolbar.parentDir")}>
+        <NavButton onClick={up} disabled={!canGoUp()} title={t("toolbar.parentDir")}>
           <ArrowUp size={18} />
         </NavButton>
         <NavButton onClick={refresh} title={t("toolbar.refresh")}>
