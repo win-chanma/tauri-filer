@@ -183,18 +183,18 @@ export function TerminalPane({ cwd, width }: TerminalPaneProps) {
   }, [width, terminalVisible]);
 
   return (
-    <div className="flex flex-col h-full bg-[var(--color-bg-deep)] border-l border-[var(--color-border)]">
+    <div className="flex flex-col h-full bg-[var(--color-bg-deep)]">
       {/* ターミナルヘッダー */}
-      <div className="flex items-center justify-between h-8 px-3 border-b border-[var(--color-border)] bg-[var(--color-bg-card)] shrink-0">
-        <span className="text-xs font-medium text-[var(--color-text-dim)]">
+      <div className="flex items-center justify-between h-7 px-2 border-b border-[var(--color-border)] bg-[var(--color-bg-deep)] shrink-0">
+        <span className="text-[11px] font-medium tracking-wide uppercase text-[var(--color-text-muted)]">
           {t("terminal.title")}
         </span>
         <button
           onClick={toggleTerminal}
-          className="p-1 rounded hover:bg-[var(--color-bg-hover)] text-[var(--color-text-muted)] hover:text-[var(--color-text)] transition-colors"
+          className="p-0.5 rounded hover:bg-[var(--color-bg-hover)] text-[var(--color-text-muted)] hover:text-[var(--color-text)] transition-colors"
           title={t("terminal.close")}
         >
-          <X size={14} />
+          <X size={12} />
         </button>
       </div>
       {/* xterm.js コンテナ */}

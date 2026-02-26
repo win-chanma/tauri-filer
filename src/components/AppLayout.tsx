@@ -101,7 +101,8 @@ export function AppLayout() {
       const handleMouseMove = (ev: MouseEvent) => {
         if (!isDraggingRef.current) return;
         const delta = startX - ev.clientX;
-        const newWidth = Math.max(200, Math.min(800, startWidth + delta));
+        const maxWidth = Math.floor(window.innerWidth * 0.5);
+        const newWidth = Math.max(200, Math.min(maxWidth, startWidth + delta));
         setTerminalWidth(newWidth);
       };
 
