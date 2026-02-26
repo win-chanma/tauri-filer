@@ -37,7 +37,6 @@ const mockMoveItems = vi.mocked(moveItems);
 const mockDeleteItems = vi.mocked(deleteItems);
 const mockCreateDirectory = vi.mocked(createDirectory);
 const mockRenameItem = vi.mocked(renameItem);
-const mockOpenFile = vi.mocked(openFile);
 
 function makeEntry(overrides: Partial<FileEntry> = {}): FileEntry {
   return {
@@ -59,8 +58,8 @@ function makeEntry(overrides: Partial<FileEntry> = {}): FileEntry {
  */
 function createHandlers() {
   const clipState = useClipboardStore.getState();
-  const navigateTo = vi.fn();
-  const refresh = vi.fn();
+  const navigateTo = vi.fn<(path: string) => void>();
+  const refresh = vi.fn<() => void>();
 
   const handlers = createContextMenuHandlers({
     getActiveTabPath: () => {

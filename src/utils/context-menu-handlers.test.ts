@@ -48,10 +48,10 @@ function makeEntry(overrides: Partial<FileEntry> = {}): FileEntry {
 }
 
 // AppLayout と同じ配線でハンドラーを生成する
-function createHandlersFromStores(overrides: { navigateTo?: ReturnType<typeof vi.fn>; refresh?: ReturnType<typeof vi.fn> } = {}) {
+function createHandlersFromStores(overrides: { navigateTo?: (path: string) => void; refresh?: () => void } = {}) {
   const clipState = useClipboardStore.getState();
-  const navigateTo = overrides.navigateTo ?? vi.fn();
-  const refresh = overrides.refresh ?? vi.fn();
+  const navigateTo = overrides.navigateTo ?? vi.fn<(path: string) => void>();
+  const refresh = overrides.refresh ?? vi.fn<() => void>();
 
   const handlers = createContextMenuHandlers({
     getActiveTabPath: () => {
