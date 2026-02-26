@@ -203,19 +203,21 @@ export function AppLayout() {
               : <GridView onContextMenu={showContextMenu} onFileOpen={handleFileOpen} />
           )}
         </main>
-        {terminalVisible && (
-          <>
-            {/* ドラッグリサイザー */}
-            <div
-              className="w-1 cursor-col-resize bg-[var(--color-border)] hover:bg-[var(--color-accent)] transition-colors shrink-0"
-              onMouseDown={handleResizeMouseDown}
-            />
-            {/* ターミナルペイン */}
-            <div style={{ width: terminalWidth }} className="shrink-0">
-              <TerminalPane cwd={activeTabPath ?? "/"} width={terminalWidth} />
-            </div>
-          </>
-        )}
+        {/* ターミナルペイン（常にマウント、CSS で表示/非表示） */}
+        <div
+          className={`flex shrink-0 ${terminalVisible ? "" : "hidden"}`}
+          style={{ width: terminalVisible ? terminalWidth : 0 }}
+        >
+          {/* ドラッグリサイザー */}
+          <div
+            className="w-1 cursor-col-resize bg-[var(--color-border)] hover:bg-[var(--color-accent)] transition-colors shrink-0"
+            onMouseDown={handleResizeMouseDown}
+          />
+          {/* ターミナル本体 */}
+          <div className="flex-1 min-w-0">
+            <TerminalPane cwd={activeTabPath ?? "/"} width={terminalWidth} />
+          </div>
+        </div>
       </div>
       <StatusBar />
 

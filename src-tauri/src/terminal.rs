@@ -84,6 +84,9 @@ pub fn terminal_spawn(
         cmd.cwd(dir);
     }
 
+    // ターミナル種別を設定（TUI アプリの色・描画機能の判定に使われる）
+    cmd.env("TERM", "xterm-256color");
+
     // Claude Code のネストセッション検出を回避するため環境変数を除去
     for key in &["CLAUDECODE", "CLAUDE_CODE"] {
         cmd.env_remove(key);

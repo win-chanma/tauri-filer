@@ -31,6 +31,7 @@ export function TerminalPane({ cwd, width }: TerminalPaneProps) {
   const unlistenRef = useRef<(() => void) | null>(null);
   const terminalFontSize = useUIStore((s) => s.terminalFontSize);
   const terminalShellPath = useUIStore((s) => s.terminalShellPath);
+  const terminalVisible = useUIStore((s) => s.terminalVisible);
   const toggleTerminal = useUIStore((s) => s.toggleTerminal);
 
   const initTerminal = useCallback(async () => {
@@ -41,12 +42,34 @@ export function TerminalPane({ cwd, width }: TerminalPaneProps) {
     const bgColor = styles.getPropertyValue("--color-bg-deep").trim() || "#1e1e1e";
     const fgColor = styles.getPropertyValue("--color-text").trim() || "#d4d4d4";
 
+    const cursorColor = styles.getPropertyValue("--color-accent").trim() || "#6366f1";
+
     const term = new Terminal({
       fontSize: terminalFontSize,
       fontFamily: "'Cascadia Code', 'Consolas', 'Courier New', monospace",
       theme: {
         background: bgColor,
         foreground: fgColor,
+        cursor: cursorColor,
+        cursorAccent: bgColor,
+        selectionBackground: "rgba(99, 102, 241, 0.3)",
+        // ANSI 16 色（標準 + 明るい）
+        black: "#1e1e2e",
+        red: "#f38ba8",
+        green: "#a6e3a1",
+        yellow: "#f9e2af",
+        blue: "#89b4fa",
+        magenta: "#cba6f7",
+        cyan: "#94e2d5",
+        white: "#cdd6f4",
+        brightBlack: "#585b70",
+        brightRed: "#f38ba8",
+        brightGreen: "#a6e3a1",
+        brightYellow: "#f9e2af",
+        brightBlue: "#89b4fa",
+        brightMagenta: "#cba6f7",
+        brightCyan: "#94e2d5",
+        brightWhite: "#ffffff",
       },
       cursorBlink: true,
     });
@@ -147,8 +170,9 @@ export function TerminalPane({ cwd, width }: TerminalPaneProps) {
     return () => window.removeEventListener("resize", handleResize);
   }, []);
 
-  // ペイン幅変更時に fit を再実行（ドラッグリサイズ対応）
+  // ペイン幅変更・表示切替時に fit を再実行
   useEffect(() => {
+    if (!terminalVisible) return;
     requestAnimationFrame(() => {
       try {
         fitAddonRef.current?.fit();
@@ -156,7 +180,7 @@ export function TerminalPane({ cwd, width }: TerminalPaneProps) {
         // fit が失敗する場合がある
       }
     });
-  }, [width]);
+  }, [width, terminalVisible]);
 
   return (
     <div className="flex flex-col h-full bg-[var(--color-bg-deep)] border-l border-[var(--color-border)]">
