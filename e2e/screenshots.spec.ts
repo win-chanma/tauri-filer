@@ -71,6 +71,23 @@ test("設定画面 - Language セクション", async ({ page }) => {
 });
 
 // ------------------------------------------------------------------
+// ターミナルペインスナップショット
+// ------------------------------------------------------------------
+test("ターミナルペイン表示", async ({ page }) => {
+  await page.goto("/");
+  await page.locator("aside").waitFor({ state: "visible" });
+
+  // ツールバーのターミナルトグルボタンをクリック
+  await page.locator("button[title='ターミナルの切替'], button[title='Toggle terminal']").click();
+
+  // ターミナルコンテナが表示されるまで待つ
+  await page.locator("[data-testid='terminal-container']").waitFor({ state: "visible" });
+  await page.waitForTimeout(300);
+
+  await expect(page).toHaveScreenshot("terminal-pane.png");
+});
+
+// ------------------------------------------------------------------
 // 代表テーマのスナップショット（5種）
 // ------------------------------------------------------------------
 const representativeThemes = [

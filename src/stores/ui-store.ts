@@ -13,6 +13,7 @@ interface UISettings {
   terminalVisible: boolean;
   terminalShellPath: string;
   terminalFontSize: number;
+  terminalPadding: number;
 }
 
 interface UIStore extends UISettings {
@@ -24,6 +25,7 @@ interface UIStore extends UISettings {
   toggleTerminal: () => void;
   setTerminalShellPath: (path: string) => void;
   setTerminalFontSize: (size: number) => void;
+  setTerminalPadding: (padding: number) => void;
 }
 
 const STORAGE_KEY = "tauri-filer-ui-settings";
@@ -50,6 +52,7 @@ const defaults: UISettings = {
   terminalVisible: false,
   terminalShellPath: "",
   terminalFontSize: 14,
+  terminalPadding: 8,
 };
 
 const initial: UISettings = { ...defaults, ...loadSettings() };
@@ -64,6 +67,7 @@ function getSettings(state: UIStore): UISettings {
     terminalVisible: state.terminalVisible,
     terminalShellPath: state.terminalShellPath,
     terminalFontSize: state.terminalFontSize,
+    terminalPadding: state.terminalPadding,
   };
 }
 
@@ -107,6 +111,10 @@ export const useUIStore = create<UIStore>((set, get) => ({
   },
   setTerminalFontSize: (size) => {
     set({ terminalFontSize: size });
+    saveSettings(getSettings(get()));
+  },
+  setTerminalPadding: (padding) => {
+    set({ terminalPadding: padding });
     saveSettings(getSettings(get()));
   },
 }));

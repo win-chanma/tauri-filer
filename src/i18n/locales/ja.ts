@@ -104,4 +104,6 @@ export const ja = {
   "settings.terminalShellPathPlaceholder": "例: pwsh.exe",
   "settings.terminalFontSize": "フォントサイズ",
   "settings.terminalFontSizeDesc": "ターミナルのフォントサイズを設定します",
+  "settings.terminalPadding": "内側の余白",
+  "settings.terminalPaddingDesc": "ターミナル描画エリアの内側余白を設定します（px）",
 } as const;
