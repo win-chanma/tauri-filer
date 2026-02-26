@@ -1,6 +1,37 @@
 import { describe, expect, it, vi, beforeEach } from "vitest";
-import { createContextMenuHandlers, type ContextMenuDeps } from "./context-menu-handlers";
+
+// Tauri バックエンド層のみモック
+vi.mock("../commands/fs-commands", () => ({
+  readDirectory: vi.fn(),
+  getHomeDir: vi.fn(),
+  createDirectory: vi.fn(),
+  renameItem: vi.fn(),
+  deleteItems: vi.fn(),
+  copyItems: vi.fn(),
+  moveItems: vi.fn(),
+  openFile: vi.fn(),
+}));
+
+import { createContextMenuHandlers } from "./context-menu-handlers";
+import { useTabStore } from "../stores/tab-store";
+import { useFileStore } from "../stores/file-store";
+import { useClipboardStore } from "../stores/clipboard-store";
+import {
+  createDirectory,
+  renameItem,
+  deleteItems,
+  copyItems,
+  moveItems,
+  openFile,
+} from "../commands/fs-commands";
 import type { FileEntry } from "../types";
+
+const mockCreateDirectory = vi.mocked(createDirectory);
+const mockRenameItem = vi.mocked(renameItem);
+const mockDeleteItems = vi.mocked(deleteItems);
+const mockCopyItems = vi.mocked(copyItems);
+const mockMoveItems = vi.mocked(moveItems);
+const mockOpenFile = vi.mocked(openFile);
 
 function makeEntry(overrides: Partial<FileEntry> = {}): FileEntry {
   return {
@@ -16,136 +47,197 @@ function makeEntry(overrides: Partial<FileEntry> = {}): FileEntry {
   };
 }
 
-function makeDeps(overrides: Partial<ContextMenuDeps> = {}): ContextMenuDeps {
-  return {
-    getActiveTabPath: vi.fn(() => "/home"),
-    getSelectedEntry: vi.fn(() => null),
-    getSelectedPaths: vi.fn(() => []),
-    navigateTo: vi.fn(),
-    openFile: vi.fn(() => Promise.resolve()),
-    createDirectory: vi.fn(() => Promise.resolve("/home/new-folder")),
-    renameItem: vi.fn(() => Promise.resolve("/home/renamed.txt")),
-    deleteItems: vi.fn(() => Promise.resolve()),
-    copyItems: vi.fn(() => Promise.resolve()),
-    moveItems: vi.fn(() => Promise.resolve()),
-    clipboardPaths: [],
-    clipboardMode: null,
-    clipboardClear: vi.fn(),
-    clearSelection: vi.fn(),
-    refresh: vi.fn(),
-    ...overrides,
-  };
+// AppLayout と同じ配線でハンドラーを生成する
+function createHandlersFromStores(overrides: { navigateTo?: ReturnType<typeof vi.fn>; refresh?: ReturnType<typeof vi.fn> } = {}) {
+  const clipState = useClipboardStore.getState();
+  const navigateTo = overrides.navigateTo ?? vi.fn();
+  const refresh = overrides.refresh ?? vi.fn();
+
+  const handlers = createContextMenuHandlers({
+    getActiveTabPath: () => {
+      const { tabs, activeTabId } = useTabStore.getState();
+      const tab = tabs.find((t) => t.id === activeTabId);
+      return tab?.path ?? null;
+    },
+    getSelectedEntry: () => {
+      const { selectedPaths, entries } = useFileStore.getState();
+      const paths = Array.from(selectedPaths);
+      if (paths.length !== 1) return null;
+      return entries.find((e) => e.path === paths[0]) || null;
+    },
+    getSelectedPaths: () => Array.from(useFileStore.getState().selectedPaths),
+    navigateTo,
+    openFile,
+    createDirectory,
+    renameItem,
+    deleteItems,
+    copyItems,
+    moveItems,
+    clipboardPaths: clipState.paths,
+    clipboardMode: clipState.mode,
+    clipboardClear: () => useClipboardStore.getState().clear(),
+    clearSelection: () => useFileStore.getState().clearSelection(),
+    refresh,
+  });
+
+  return { ...handlers, navigateTo, refresh };
 }
 
-describe("createContextMenuHandlers", () => {
+describe("createContextMenuHandlers（実ストア連携）", () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    // ストアをリセット
+    useTabStore.setState({ tabs: [], activeTabId: "" });
+    useFileStore.setState({
+      entries: [],
+      selectedPaths: new Set(),
+      lastSelectedPath: null,
+      sortConfig: { key: "name", order: "asc" },
+      loading: false,
+      error: null,
+    });
+    useClipboardStore.setState({ paths: [], mode: null });
+  });
+
   describe("handleFileOpen", () => {
     it("ディレクトリ → navigateTo が呼ばれる", async () => {
-      const deps = makeDeps();
-      const { handleFileOpen } = createContextMenuHandlers(deps);
-      const dirEntry = makeEntry({ isDir: true, path: "/home/docs", name: "docs" });
+      const { handleFileOpen, navigateTo } = createHandlersFromStores();
+      const dir = makeEntry({ isDir: true, path: "/home/docs", name: "docs" });
 
-      await handleFileOpen(dirEntry);
+      await handleFileOpen(dir);
 
-      expect(deps.navigateTo).toHaveBeenCalledWith("/home/docs");
-      expect(deps.openFile).not.toHaveBeenCalled();
+      expect(navigateTo).toHaveBeenCalledWith("/home/docs");
+      expect(mockOpenFile).not.toHaveBeenCalled();
     });
 
     it("ファイル → openFile が呼ばれる", async () => {
-      const deps = makeDeps();
-      const { handleFileOpen } = createContextMenuHandlers(deps);
-      const fileEntry = makeEntry({ path: "/home/test.txt" });
+      mockOpenFile.mockResolvedValue(undefined);
+      const { handleFileOpen, navigateTo } = createHandlersFromStores();
 
-      await handleFileOpen(fileEntry);
+      await handleFileOpen(makeEntry({ path: "/home/test.txt" }));
 
-      expect(deps.openFile).toHaveBeenCalledWith("/home/test.txt");
-      expect(deps.navigateTo).not.toHaveBeenCalled();
+      expect(mockOpenFile).toHaveBeenCalledWith("/home/test.txt");
+      expect(navigateTo).not.toHaveBeenCalled();
     });
   });
 
   describe("handlePaste", () => {
-    it("copy モード → copyItems が呼ばれ refresh される", async () => {
-      const deps = makeDeps({
-        clipboardPaths: ["/a.txt"],
-        clipboardMode: "copy",
-      });
-      const { handlePaste } = createContextMenuHandlers(deps);
+    it("copy モード → copyItems が正しいパスで呼ばれ、クリップボードは維持される", async () => {
+      // タブとクリップボードをセットアップ
+      useTabStore.getState().addTab("/home/dest");
+      useClipboardStore.getState().copy(["/home/src/a.txt"]);
+      mockCopyItems.mockResolvedValue(undefined);
 
+      const { handlePaste, refresh } = createHandlersFromStores();
       await handlePaste();
 
-      expect(deps.copyItems).toHaveBeenCalledWith(["/a.txt"], "/home");
-      expect(deps.refresh).toHaveBeenCalled();
-      expect(deps.clipboardClear).not.toHaveBeenCalled();
+      expect(mockCopyItems).toHaveBeenCalledWith(["/home/src/a.txt"], "/home/dest");
+      expect(refresh).toHaveBeenCalled();
+      // copy モードではクリップボードを維持
+      expect(useClipboardStore.getState().paths).toEqual(["/home/src/a.txt"]);
+      expect(useClipboardStore.getState().mode).toBe("copy");
     });
 
-    it("cut モード → moveItems + clipboardClear が呼ばれる", async () => {
-      const deps = makeDeps({
-        clipboardPaths: ["/a.txt"],
-        clipboardMode: "cut",
-      });
-      const { handlePaste } = createContextMenuHandlers(deps);
+    it("cut モード → moveItems が呼ばれ、クリップボードがクリアされる", async () => {
+      useTabStore.getState().addTab("/home/dest");
+      useClipboardStore.getState().cut(["/home/src/b.txt"]);
+      mockMoveItems.mockResolvedValue(undefined);
 
+      const { handlePaste, refresh } = createHandlersFromStores();
       await handlePaste();
 
-      expect(deps.moveItems).toHaveBeenCalledWith(["/a.txt"], "/home");
-      expect(deps.clipboardClear).toHaveBeenCalled();
-      expect(deps.refresh).toHaveBeenCalled();
+      expect(mockMoveItems).toHaveBeenCalledWith(["/home/src/b.txt"], "/home/dest");
+      expect(refresh).toHaveBeenCalled();
+      // cut モードではクリップボードがクリアされる
+      expect(useClipboardStore.getState().paths).toEqual([]);
+      expect(useClipboardStore.getState().mode).toBeNull();
     });
 
     it("クリップボード空 → 何もしない", async () => {
-      const deps = makeDeps({
-        clipboardPaths: [],
-        clipboardMode: null,
-      });
-      const { handlePaste } = createContextMenuHandlers(deps);
+      useTabStore.getState().addTab("/home/dest");
+      // クリップボードは空のまま
 
+      const { handlePaste, refresh } = createHandlersFromStores();
       await handlePaste();
 
-      expect(deps.copyItems).not.toHaveBeenCalled();
-      expect(deps.moveItems).not.toHaveBeenCalled();
-      expect(deps.refresh).not.toHaveBeenCalled();
+      expect(mockCopyItems).not.toHaveBeenCalled();
+      expect(mockMoveItems).not.toHaveBeenCalled();
+      expect(refresh).not.toHaveBeenCalled();
+    });
+
+    it("アクティブタブがない → 何もしない", async () => {
+      // タブを追加しない
+      useClipboardStore.getState().copy(["/file.txt"]);
+
+      const { handlePaste } = createHandlersFromStores();
+      await handlePaste();
+
+      expect(mockCopyItems).not.toHaveBeenCalled();
     });
   });
 
   describe("handleCreateFolder", () => {
-    it("createDirectory + refresh が呼ばれる", async () => {
-      const deps = makeDeps();
-      const { handleCreateFolder } = createContextMenuHandlers(deps);
+    it("アクティブタブのパスで createDirectory が呼ばれる", async () => {
+      useTabStore.getState().addTab("/home/user");
+      mockCreateDirectory.mockResolvedValue("/home/user/new-folder");
 
+      const { handleCreateFolder, refresh } = createHandlersFromStores();
       await handleCreateFolder("new-folder");
 
-      expect(deps.createDirectory).toHaveBeenCalledWith("/home", "new-folder");
-      expect(deps.refresh).toHaveBeenCalled();
+      expect(mockCreateDirectory).toHaveBeenCalledWith("/home/user", "new-folder");
+      expect(refresh).toHaveBeenCalled();
     });
   });
 
   describe("handleRename", () => {
-    it("renameItem + clearSelection + refresh が呼ばれる", async () => {
-      const entry = makeEntry({ path: "/home/old.txt" });
-      const deps = makeDeps({
-        getSelectedEntry: vi.fn(() => entry),
+    it("選択中ファイルが renameItem で改名され、選択がクリアされる", async () => {
+      const entry = makeEntry({ path: "/home/old.txt", name: "old.txt" });
+      useFileStore.setState({
+        entries: [entry],
+        selectedPaths: new Set(["/home/old.txt"]),
+        lastSelectedPath: "/home/old.txt",
       });
-      const { handleRename } = createContextMenuHandlers(deps);
+      mockRenameItem.mockResolvedValue("/home/new.txt");
 
+      const { handleRename, refresh } = createHandlersFromStores();
       await handleRename("new.txt");
 
-      expect(deps.renameItem).toHaveBeenCalledWith("/home/old.txt", "new.txt");
-      expect(deps.clearSelection).toHaveBeenCalled();
-      expect(deps.refresh).toHaveBeenCalled();
+      expect(mockRenameItem).toHaveBeenCalledWith("/home/old.txt", "new.txt");
+      expect(refresh).toHaveBeenCalled();
+      // 選択がクリアされている
+      expect(useFileStore.getState().selectedPaths.size).toBe(0);
+    });
+
+    it("選択なし → 何もしない", async () => {
+      // selectedPaths は空
+      const { handleRename } = createHandlersFromStores();
+      await handleRename("new.txt");
+
+      expect(mockRenameItem).not.toHaveBeenCalled();
     });
   });
 
   describe("handleDelete", () => {
-    it("deleteItems + clearSelection + refresh が呼ばれる", async () => {
-      const deps = makeDeps({
-        getSelectedPaths: vi.fn(() => ["/home/a.txt", "/home/b.txt"]),
+    it("選択中ファイルが deleteItems で削除され、選択がクリアされる", async () => {
+      useFileStore.setState({
+        selectedPaths: new Set(["/home/a.txt", "/home/b.txt"]),
       });
-      const { handleDelete } = createContextMenuHandlers(deps);
+      mockDeleteItems.mockResolvedValue(undefined);
 
+      const { handleDelete, refresh } = createHandlersFromStores();
       await handleDelete();
 
-      expect(deps.deleteItems).toHaveBeenCalledWith(["/home/a.txt", "/home/b.txt"]);
-      expect(deps.clearSelection).toHaveBeenCalled();
-      expect(deps.refresh).toHaveBeenCalled();
+      expect(mockDeleteItems).toHaveBeenCalledWith(["/home/a.txt", "/home/b.txt"]);
+      expect(refresh).toHaveBeenCalled();
+      expect(useFileStore.getState().selectedPaths.size).toBe(0);
+    });
+
+    it("選択なし → 何もしない", async () => {
+      const { handleDelete, refresh } = createHandlersFromStores();
+      await handleDelete();
+
+      expect(mockDeleteItems).not.toHaveBeenCalled();
+      expect(refresh).not.toHaveBeenCalled();
     });
   });
 
@@ -156,37 +248,58 @@ describe("createContextMenuHandlers", () => {
       consoleSpy = vi.spyOn(console, "error").mockImplementation(() => {});
     });
 
-    it("createDirectory 失敗 → console.error、クラッシュしない", async () => {
-      const deps = makeDeps({
-        createDirectory: vi.fn(() => Promise.reject(new Error("permission denied"))),
-      });
-      const { handleCreateFolder } = createContextMenuHandlers(deps);
+    it("copyItems 失敗 → console.error、クラッシュしない", async () => {
+      useTabStore.getState().addTab("/home/dest");
+      useClipboardStore.getState().copy(["/file.txt"]);
+      mockCopyItems.mockRejectedValue(new Error("permission denied"));
 
-      await expect(handleCreateFolder("test")).resolves.toBeUndefined();
-      expect(consoleSpy).toHaveBeenCalledWith("Create folder failed:", expect.any(Error));
-      expect(deps.refresh).not.toHaveBeenCalled();
+      const { handlePaste, refresh } = createHandlersFromStores();
+      await expect(handlePaste()).resolves.toBeUndefined();
+
+      expect(consoleSpy).toHaveBeenCalledWith("Paste failed:", expect.any(Error));
+      expect(refresh).not.toHaveBeenCalled();
     });
 
-    it("deleteItems 失敗 → console.error、クラッシュしない", async () => {
-      const deps = makeDeps({
-        getSelectedPaths: vi.fn(() => ["/a.txt"]),
-        deleteItems: vi.fn(() => Promise.reject(new Error("delete failed"))),
+    it("deleteItems 失敗 → 選択はクリアされない", async () => {
+      useFileStore.setState({
+        selectedPaths: new Set(["/a.txt"]),
       });
-      const { handleDelete } = createContextMenuHandlers(deps);
+      mockDeleteItems.mockRejectedValue(new Error("delete failed"));
 
+      const { handleDelete } = createHandlersFromStores();
       await expect(handleDelete()).resolves.toBeUndefined();
+
       expect(consoleSpy).toHaveBeenCalledWith("Delete failed:", expect.any(Error));
-      expect(deps.clearSelection).not.toHaveBeenCalled();
+      // エラー時は選択がクリアされない
+      expect(useFileStore.getState().selectedPaths.size).toBe(1);
     });
 
     it("openFile 失敗 → console.error、クラッシュしない", async () => {
-      const deps = makeDeps({
-        openFile: vi.fn(() => Promise.reject(new Error("open failed"))),
-      });
-      const { handleFileOpen } = createContextMenuHandlers(deps);
+      mockOpenFile.mockRejectedValue(new Error("open failed"));
 
+      const { handleFileOpen } = createHandlersFromStores();
       await expect(handleFileOpen(makeEntry())).resolves.toBeUndefined();
+
       expect(consoleSpy).toHaveBeenCalledWith("Open file failed:", expect.any(Error));
+    });
+  });
+
+  describe("ストア状態更新後のハンドラー再生成", () => {
+    it("クリップボード更新後、新ハンドラーは最新の値を使う", async () => {
+      useTabStore.getState().addTab("/home/dest");
+      mockCopyItems.mockResolvedValue(undefined);
+
+      // クリップボード空でハンドラー生成 → paste しても何も起きない
+      const handlers1 = createHandlersFromStores();
+      await handlers1.handlePaste();
+      expect(mockCopyItems).not.toHaveBeenCalled();
+
+      // クリップボードにコピー → 新しいハンドラー生成（React の再レンダーをシミュレート）
+      useClipboardStore.getState().copy(["/file.txt"]);
+      const handlers2 = createHandlersFromStores();
+      await handlers2.handlePaste();
+
+      expect(mockCopyItems).toHaveBeenCalledWith(["/file.txt"], "/home/dest");
     });
   });
 });
