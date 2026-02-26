@@ -30,6 +30,7 @@ export function TerminalPane({ cwd, width }: TerminalPaneProps) {
   const fitAddonRef = useRef<FitAddon | null>(null);
   const sessionIdRef = useRef<number | null>(null);
   const unlistenRef = useRef<(() => void) | null>(null);
+  const webglAddonRef = useRef<WebglAddon | null>(null);
   const terminalFontSize = useUIStore((s) => s.terminalFontSize);
   const terminalShellPath = useUIStore((s) => s.terminalShellPath);
   const terminalVisible = useUIStore((s) => s.terminalVisible);
@@ -83,9 +84,11 @@ export function TerminalPane({ cwd, width }: TerminalPaneProps) {
     try {
       const webglAddon = new WebglAddon();
       webglAddon.onContextLoss(() => {
-        webglAddon.dispose();
+        try { webglAddon.dispose(); } catch { /* ignore */ }
+        webglAddonRef.current = null;
       });
       term.loadAddon(webglAddon);
+      webglAddonRef.current = webglAddon;
     } catch {
       // WebGL2 非対応環境では Canvas フォールバック
     }
@@ -159,8 +162,13 @@ export function TerminalPane({ cwd, width }: TerminalPaneProps) {
         unlistenRef.current();
         unlistenRef.current = null;
       }
+      // WebGL addon を先に dispose（Terminal.dispose() 内での二重 dispose クラッシュを防ぐ）
+      if (webglAddonRef.current) {
+        try { webglAddonRef.current.dispose(); } catch { /* ignore */ }
+        webglAddonRef.current = null;
+      }
       if (xtermRef.current) {
-        xtermRef.current.dispose();
+        try { xtermRef.current.dispose(); } catch { /* ignore */ }
         xtermRef.current = null;
       }
     };
