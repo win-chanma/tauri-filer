@@ -1,5 +1,4 @@
 @import "tailwindcss";
-@import "@xterm/xterm/css/xterm.css";
 
 :root {
   --color-bg: #0a0a0f;

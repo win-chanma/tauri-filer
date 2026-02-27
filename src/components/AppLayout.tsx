@@ -1,4 +1,4 @@
-import { useEffect, useState, useCallback, useRef } from "react";
+import { useEffect, useState, useCallback, useRef, lazy, Suspense } from "react";
 import { useTranslation } from "react-i18next";
 import { useTabStore } from "../stores/tab-store";
 import { useFileStore } from "../stores/file-store";
@@ -31,11 +31,12 @@ import { RenameDialog } from "./RenameDialog";
 import { DeleteConfirmDialog } from "./DeleteConfirmDialog";
 import { SearchDialog } from "./SearchDialog";
 import { FilePreviewDialog } from "./FilePreviewDialog";
-import { SettingsDialog } from "./SettingsDialog";
-import { TerminalPane } from "./TerminalPane";
 import { EmptyState } from "./EmptyState";
 import { Spinner } from "./Spinner";
 import type { FileEntry } from "../types";
+
+const TerminalPane = lazy(() => import("./TerminalPane").then((m) => ({ default: m.TerminalPane })));
+const SettingsDialog = lazy(() => import("./SettingsDialog").then((m) => ({ default: m.SettingsDialog })));
 
 export function AppLayout() {
   const { t } = useTranslation();
@@ -204,21 +205,24 @@ export function AppLayout() {
               : <GridView onContextMenu={showContextMenu} onFileOpen={handleFileOpen} />
           )}
         </main>
-        {/* ターミナルペイン（常にマウント、CSS で表示/非表示） */}
-        <div
-          className={`flex shrink-0 ${terminalVisible ? "" : "hidden"}`}
-          style={{ width: terminalVisible ? terminalWidth : 0 }}
-        >
-          {/* ドラッグリサイザー */}
+        {terminalVisible && (
           <div
-            className="w-1 cursor-col-resize bg-[var(--color-border)] hover:bg-[var(--color-accent)] transition-colors shrink-0"
-            onMouseDown={handleResizeMouseDown}
-          />
-          {/* ターミナル本体 */}
-          <div className="flex-1 min-w-0">
-            <TerminalPane cwd={activeTabPath ?? "/"} width={terminalWidth} />
+            className="flex shrink-0"
+            style={{ width: terminalWidth }}
+          >
+            {/* ドラッグリサイザー */}
+            <div
+              className="w-1 cursor-col-resize bg-[var(--color-border)] hover:bg-[var(--color-accent)] transition-colors shrink-0"
+              onMouseDown={handleResizeMouseDown}
+            />
+            {/* ターミナル本体 */}
+            <div className="flex-1 min-w-0">
+              <Suspense fallback={null}>
+                <TerminalPane cwd={activeTabPath ?? "/"} width={terminalWidth} />
+              </Suspense>
+            </div>
           </div>
-        </div>
+        )}
       </div>
       <StatusBar />
 
@@ -255,10 +259,14 @@ export function AppLayout() {
         entry={previewEntry}
         onClose={() => setPreviewEntry(null)}
       />
-      <SettingsDialog
-        open={settingsOpen}
-        onClose={() => setSettingsOpen(false)}
-      />
+      {settingsOpen && (
+        <Suspense fallback={null}>
+          <SettingsDialog
+            open={settingsOpen}
+            onClose={() => setSettingsOpen(false)}
+          />
+        </Suspense>
+      )}
     </div>
   );
 }
