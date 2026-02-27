@@ -1,7 +1,7 @@
 import { create } from "zustand";
 import i18n from "i18next";
 import type { ViewMode, Language, ThemeId } from "../types";
-import { getTheme } from "../themes";
+import { getTheme, loadTheme } from "../themes";
 import { applyTheme } from "../themes/apply-theme";
 
 interface UISettings {
@@ -79,11 +79,21 @@ function getSettings(state: UIStore): UISettings {
   };
 }
 
-// Apply theme immediately on module load to prevent FOUC
+// default テーマで即座に適用（FOUC 防止）
 applyTheme(
   getTheme(initial.themeId),
   initial.windowTransparency ? initial.windowOpacity / 100 : undefined,
 );
+
+// 保存済みテーマが default 以外なら非同期でロードして再適用
+if (initial.themeId !== "default") {
+  loadTheme(initial.themeId).then((theme) => {
+    applyTheme(
+      theme,
+      initial.windowTransparency ? initial.windowOpacity / 100 : undefined,
+    );
+  });
+}
 
 export const useUIStore = create<UIStore>((set, get) => ({
   ...initial,
@@ -111,10 +121,12 @@ export const useUIStore = create<UIStore>((set, get) => ({
     set({ themeId });
     saveSettings(getSettings(get()));
     const s = get();
-    applyTheme(
-      getTheme(themeId),
-      s.windowTransparency ? s.windowOpacity / 100 : undefined,
-    );
+    loadTheme(themeId).then((theme) => {
+      applyTheme(
+        theme,
+        s.windowTransparency ? s.windowOpacity / 100 : undefined,
+      );
+    });
   },
   toggleTerminal: () => {
     set((s) => ({ terminalVisible: !s.terminalVisible }));
@@ -136,18 +148,22 @@ export const useUIStore = create<UIStore>((set, get) => ({
     set({ windowTransparency: enabled });
     saveSettings(getSettings(get()));
     const s = get();
-    applyTheme(
-      getTheme(s.themeId),
-      enabled ? s.windowOpacity / 100 : undefined,
-    );
+    loadTheme(s.themeId).then((theme) => {
+      applyTheme(
+        theme,
+        enabled ? s.windowOpacity / 100 : undefined,
+      );
+    });
   },
   setWindowOpacity: (opacity) => {
     set({ windowOpacity: opacity });
     saveSettings(getSettings(get()));
     const s = get();
-    applyTheme(
-      getTheme(s.themeId),
-      s.windowTransparency ? opacity / 100 : undefined,
-    );
+    loadTheme(s.themeId).then((theme) => {
+      applyTheme(
+        theme,
+        s.windowTransparency ? opacity / 100 : undefined,
+      );
+    });
   },
 }));

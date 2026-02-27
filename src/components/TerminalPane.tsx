@@ -3,6 +3,7 @@ import { useTranslation } from "react-i18next";
 import { Terminal } from "@xterm/xterm";
 import { FitAddon } from "@xterm/addon-fit";
 import { WebglAddon } from "@xterm/addon-webgl";
+import "@xterm/xterm/css/xterm.css";
 import { listen } from "@tauri-apps/api/event";
 import { useUIStore } from "../stores/ui-store";
 import {

@@ -11,8 +11,8 @@ import {
   Palette,
   TerminalSquare,
 } from "lucide-react";
-import type { Language, ThemeId } from "../types";
-import { themeList } from "../themes";
+import type { Language, Theme, ThemeId } from "../types";
+import { loadAllThemes } from "../themes";
 
 type SectionId = "display" | "theme" | "language" | "terminal";
 
@@ -45,11 +45,13 @@ export function SettingsDialog({ open, onClose }: SettingsDialogProps) {
   const setWindowOpacity = useUIStore((s) => s.setWindowOpacity);
   const dialogRef = useRef<HTMLDivElement>(null);
   const [activeSection, setActiveSection] = useState<SectionId>("display");
+  const [themes, setThemes] = useState<Theme[]>([]);
 
   useEffect(() => {
     if (open) {
       dialogRef.current?.focus();
       setActiveSection("display");
+      loadAllThemes().then(setThemes);
     }
   }, [open]);
 
@@ -221,7 +223,7 @@ export function SettingsDialog({ open, onClose }: SettingsDialogProps) {
             {activeSection === "theme" && (
               <SettingsPane title={t("settings.sectionTheme")}>
                 <div className="grid grid-cols-3 gap-3 p-4">
-                  {themeList.map((theme) => (
+                  {themes.map((theme) => (
                     <ThemeSwatch
                       key={theme.id}
                       themeId={theme.id}
