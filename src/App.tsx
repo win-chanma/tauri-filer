@@ -5,7 +5,11 @@ import { AppLayout } from "./components/AppLayout";
 
 function App() {
   useEffect(() => {
-    getCurrentWindow().show();
+    try {
+      getCurrentWindow().show().catch(() => {});
+    } catch {
+      // not in Tauri context (e.g. Playwright tests)
+    }
   }, []);
 
   return (
