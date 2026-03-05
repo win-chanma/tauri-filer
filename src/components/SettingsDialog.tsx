@@ -10,11 +10,12 @@ import {
   Globe,
   Palette,
   TerminalSquare,
+  Info,
 } from "lucide-react";
 import type { Language, Theme, ThemeId } from "../types";
 import { loadAllThemes } from "../themes";
 
-type SectionId = "display" | "theme" | "language" | "terminal";
+type SectionId = "display" | "theme" | "language" | "terminal" | "about";
 
 interface SettingsDialogProps {
   open: boolean;
@@ -46,12 +47,17 @@ export function SettingsDialog({ open, onClose }: SettingsDialogProps) {
   const dialogRef = useRef<HTMLDivElement>(null);
   const [activeSection, setActiveSection] = useState<SectionId>("display");
   const [themes, setThemes] = useState<Theme[]>([]);
+  const [appVersion, setAppVersion] = useState("");
 
   useEffect(() => {
     if (open) {
       dialogRef.current?.focus();
       setActiveSection("display");
       loadAllThemes().then(setThemes);
+      import("@tauri-apps/api/app")
+        .then((mod) => mod.getVersion())
+        .then(setAppVersion)
+        .catch(() => {});
     }
   }, [open]);
 
@@ -77,6 +83,11 @@ export function SettingsDialog({ open, onClose }: SettingsDialogProps) {
       id: "terminal",
       label: t("settings.sectionTerminal"),
       icon: <TerminalSquare size={16} />,
+    },
+    {
+      id: "about",
+      label: t("settings.sectionAbout"),
+      icon: <Info size={16} />,
     },
   ];
 
@@ -302,6 +313,18 @@ export function SettingsDialog({ open, onClose }: SettingsDialogProps) {
                     max={32}
                     className="w-[80px] h-9 bg-[var(--color-bg)] border border-[var(--color-border)] rounded-lg px-3.5 text-[13px] font-medium text-[var(--color-text)] hover:border-[var(--color-text-muted)] focus:ring-2 focus:ring-[var(--color-accent)]/20 focus:border-[var(--color-accent)] focus:outline-none transition-colors text-center"
                   />
+                </SettingRow>
+              </SettingsPane>
+            )}
+
+            {activeSection === "about" && (
+              <SettingsPane title={t("settings.sectionAbout")}>
+                <SettingRow
+                  label={t("settings.aboutVersion")}
+                >
+                  <span className="text-[13px] font-medium text-[var(--color-text)]">
+                    {appVersion || "—"}
+                  </span>
                 </SettingRow>
               </SettingsPane>
             )}

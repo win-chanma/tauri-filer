@@ -113,6 +113,10 @@ export const en = {
   "settings.windowOpacity": "Opacity",
   "settings.windowOpacityDesc": "Adjust the background opacity (30–100%)",
 
+  // Settings - About
+  "settings.sectionAbout": "About",
+  "settings.aboutVersion": "Version",
+
   // Updater
   "updater.available": "v{{version}} is available",
   "updater.install": "Update",
