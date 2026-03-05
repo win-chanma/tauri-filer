@@ -21,8 +21,8 @@ export function UpdateNotification() {
           setState("available");
         }
       })
-      .catch(() => {
-        // silently ignore update check failures
+      .catch((err) => {
+        console.error("[updater] check failed:", err);
       });
   }, []);
 
