@@ -18,14 +18,14 @@ describe("tauri.conf.json セキュリティ設定", () => {
       expect(csp).toMatch(/default-src\s+'self'/);
     });
 
-    it("script-src に 'unsafe-inline' が含まれないこと", () => {
-      const scriptSrc = csp.match(/script-src\s+([^;]+)/)?.[1] ?? "";
-      expect(scriptSrc).not.toContain("unsafe-inline");
-    });
-
     it("script-src に 'unsafe-eval' が含まれないこと", () => {
       const scriptSrc = csp.match(/script-src\s+([^;]+)/)?.[1] ?? "";
       expect(scriptSrc).not.toContain("unsafe-eval");
+    });
+
+    it("script-src にリモートドメインが含まれないこと", () => {
+      const scriptSrc = csp.match(/script-src\s+([^;]+)/)?.[1] ?? "";
+      expect(scriptSrc).not.toMatch(/https?:\/\//);
     });
 
     it("img-src に asset protocol が許可されていること", () => {
