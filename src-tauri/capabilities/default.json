@@ -19,6 +19,7 @@
     "dialog:allow-confirm",
     "shell:default",
     "shell:allow-open",
+    "updater:default",
     {
       "identifier": "fs:scope",
       "allow": [
