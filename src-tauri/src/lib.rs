@@ -3,6 +3,7 @@ mod models;
 mod terminal;
 
 use commands::*;
+use tauri::Manager;
 use terminal::PtyManager;
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
@@ -14,6 +15,14 @@ pub fn run() {
         .plugin(tauri_plugin_shell::init())
         .plugin(tauri_plugin_updater::Builder::new().build())
         .manage(PtyManager::new())
+        .setup(|app| {
+            if let Ok(icon) = tauri::image::Image::from_bytes(include_bytes!("../icons/icon.png")) {
+                if let Some(window) = app.get_webview_window("main") {
+                    let _ = window.set_icon(icon);
+                }
+            }
+            Ok(())
+        })
         .invoke_handler(tauri::generate_handler![
             read_directory,
             get_home_dir,
