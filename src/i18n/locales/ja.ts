@@ -113,6 +113,10 @@ export const ja = {
   "settings.windowOpacity": "不透明度",
   "settings.windowOpacityDesc": "背景の不透明度を調整します（30〜100%）",
 
+  // Settings - About
+  "settings.sectionAbout": "アプリについて",
+  "settings.aboutVersion": "バージョン",
+
   // Updater
   "updater.available": "v{{version}} が利用可能です",
   "updater.install": "更新する",
