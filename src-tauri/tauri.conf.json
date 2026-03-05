@@ -19,8 +19,7 @@
         "minHeight": 480,
         "transparent": true,
         "shadow": false,
-        "visible": false,
-        "icon": "icons/icon.png"
+        "visible": false
       }
     ],
     "security": {
