@@ -13,17 +13,20 @@ export function UpdateNotification() {
   const [dismissed, setDismissed] = useState(false);
 
   useEffect(() => {
-    checkForUpdate()
-      .then((u) => {
-        if (u) {
-          setUpdate(u);
-          setVersion(u.version);
-          setState("available");
-        }
-      })
-      .catch((err) => {
-        console.error("[updater] check failed:", err);
-      });
+    const timer = setTimeout(() => {
+      checkForUpdate()
+        .then((u) => {
+          if (u) {
+            setUpdate(u);
+            setVersion(u.version);
+            setState("available");
+          }
+        })
+        .catch((err) => {
+          console.error("[updater] check failed:", err);
+        });
+    }, 5000);
+    return () => clearTimeout(timer);
   }, []);
 
   async function handleUpdate() {
