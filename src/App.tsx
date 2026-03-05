@@ -6,7 +6,11 @@ import { AppLayout } from "./components/AppLayout";
 function App() {
   useEffect(() => {
     try {
-      getCurrentWindow().show().catch(() => {});
+      const win = getCurrentWindow();
+      win
+        .show()
+        .then(() => win.setIcon("icons/icon.png"))
+        .catch(() => {});
     } catch {
       // not in Tauri context (e.g. Playwright tests)
     }
