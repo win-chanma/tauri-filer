@@ -1,7 +1,51 @@
 #!/bin/bash
-# pre-push hook: Playwright スクリーンショットテストでデザインリグレッションをチェック
+# pre-push hook:
+# 1. main ブランチへの直接 push をブロック（CLAUDE.md 等の例外あり）
+# 2. Playwright スクリーンショットテストでデザインリグレッションをチェック
 # スキップしたい場合: git push --no-verify
 
+# ============================================================
+# main ブランチ保護
+# ============================================================
+CLAUDE_FILES_PATTERN='^(CLAUDE\.md|\.claude/)'
+
+while read local_ref local_sha remote_ref remote_sha; do
+  if [[ "$remote_ref" == "refs/heads/main" ]]; then
+    # 新規ブランチの場合は remote_sha が 0 の連続
+    if [[ "$remote_sha" == "0000000000000000000000000000000000000000" ]]; then
+      continue
+    fi
+
+    # 変更ファイルを取得
+    changed_files=$(git diff --name-only "$remote_sha" "$local_sha" 2>/dev/null)
+
+    if [ -z "$changed_files" ]; then
+      continue
+    fi
+
+    # CLAUDE.md / .claude/ 以外のファイルが含まれるかチェック
+    non_claude_files=$(echo "$changed_files" | grep -v -E "$CLAUDE_FILES_PATTERN")
+
+    if [ -n "$non_claude_files" ]; then
+      echo ""
+      echo "❌ main ブランチへの直接 push はブロックされました。"
+      echo ""
+      echo "   変更されたファイル（CLAUDE関連以外）:"
+      echo "$non_claude_files" | sed 's/^/     /'
+      echo ""
+      echo "   → feature ブランチを作成して PR 経由でマージしてください:"
+      echo "     git checkout -b feature/xxx"
+      echo "     git push -u origin feature/xxx"
+      echo "     gh pr create"
+      echo ""
+      exit 1
+    fi
+  fi
+done
+
+# ============================================================
+# Playwright スクリーンショットテスト
+# ============================================================
 echo "🔍 デザインリグレッションチェック (Playwright screenshot tests)..."
 
 # Windows 環境で Node.js の PATH が通っていない場合に補完
