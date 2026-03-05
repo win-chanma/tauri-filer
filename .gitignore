@@ -29,6 +29,9 @@ dist-ssr
 /blob-report/
 /playwright/.cache/
 
+# Secrets
+.env.keys
+
 # Claude Code
 .claude/
 CLAUDE.md

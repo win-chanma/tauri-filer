@@ -112,4 +112,12 @@ export const ja = {
   "settings.windowTransparencyDesc": "ウィンドウ背景を半透明にしてデスクトップを透かします",
   "settings.windowOpacity": "不透明度",
   "settings.windowOpacityDesc": "背景の不透明度を調整します（30〜100%）",
+
+  // Updater
+  "updater.available": "v{{version}} が利用可能です",
+  "updater.install": "更新する",
+  "updater.downloading": "更新をダウンロード中...",
+  "updater.ready": "更新完了 — アプリを再起動してください",
+  "updater.restart": "再起動",
+  "updater.dismiss": "閉じる",
 } as const;
