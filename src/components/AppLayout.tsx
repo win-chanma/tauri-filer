@@ -32,6 +32,7 @@ import { DeleteConfirmDialog } from "./DeleteConfirmDialog";
 import { SearchDialog } from "./SearchDialog";
 import { FilePreviewDialog } from "./FilePreviewDialog";
 import { EmptyState } from "./EmptyState";
+import { UpdateNotification } from "./UpdateNotification";
 import { Spinner } from "./Spinner";
 import type { FileEntry } from "../types";
 
@@ -189,6 +190,7 @@ export function AppLayout() {
     <div className="flex flex-col h-screen bg-[var(--color-bg)] text-[var(--color-text)]">
       <TabBar />
       <Toolbar onSettingsOpen={() => setSettingsOpen(true)} />
+      <UpdateNotification />
       <div className="flex flex-1 min-h-0">
         {sidebarVisible && <Sidebar />}
         <main className="flex-1 min-w-0 flex flex-col">

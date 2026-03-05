@@ -112,4 +112,12 @@ export const en = {
   "settings.windowTransparencyDesc": "Make the window background semi-transparent",
   "settings.windowOpacity": "Opacity",
   "settings.windowOpacityDesc": "Adjust the background opacity (30–100%)",
+
+  // Updater
+  "updater.available": "v{{version}} is available",
+  "updater.install": "Update",
+  "updater.downloading": "Downloading update...",
+  "updater.ready": "Update complete — please restart the app",
+  "updater.restart": "Restart",
+  "updater.dismiss": "Dismiss",
 } as const;
