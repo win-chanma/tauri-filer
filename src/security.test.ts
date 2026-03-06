@@ -42,7 +42,8 @@ describe("tauri.conf.json セキュリティ設定", () => {
 
   describe("Shell plugin open パターン", () => {
     const pattern = tauriConf.plugins.shell.open;
-    const regex = new RegExp(pattern);
+    // Tauri は内部で ^..$ でラップするため、実際の挙動を再現する
+    const regex = new RegExp("^" + pattern + "$");
 
     it("パターンが .* (全許可) でないこと", () => {
       expect(pattern).not.toBe(".*");

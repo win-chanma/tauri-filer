@@ -6,8 +6,12 @@ export async function readDirectory(path: string): Promise<FileEntry[]> {
   return invoke<FileEntry[]>("read_directory", { path });
 }
 
+let homeDirCache: string | null = null;
+
 export async function getHomeDir(): Promise<string> {
-  return invoke<string>("get_home_dir");
+  if (homeDirCache) return homeDirCache;
+  homeDirCache = await invoke<string>("get_home_dir");
+  return homeDirCache;
 }
 
 export async function copyItems(
