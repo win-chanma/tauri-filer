@@ -1,24 +1,22 @@
-import { useEffect, useRef, useState, memo } from "react";
+import { useEffect, useState, memo } from "react";
 import { useTranslation } from "react-i18next";
 import { Download, RefreshCw, X } from "lucide-react";
-import { checkForUpdate, type Update } from "../commands/updater-commands";
+import { checkUpdateVersion, checkForUpdate } from "../commands/updater-commands";
 
 type UpdateState = "idle" | "available" | "downloading" | "ready";
 
 export const UpdateNotification = memo(function UpdateNotification() {
   const { t } = useTranslation();
   const [state, setState] = useState<UpdateState>("idle");
-  const updateRef = useRef<Update | null>(null);
   const [version, setVersion] = useState("");
   const [dismissed, setDismissed] = useState(false);
 
   useEffect(() => {
     const scheduleCheck = () => {
-      checkForUpdate()
-        .then((u) => {
-          if (u) {
-            updateRef.current = u;
-            setVersion(u.version);
+      checkUpdateVersion()
+        .then((v) => {
+          if (v) {
+            setVersion(v);
             setState("available");
           }
         })
@@ -38,11 +36,16 @@ export const UpdateNotification = memo(function UpdateNotification() {
   }, []);
 
   async function handleUpdate() {
-    if (!updateRef.current) return;
     setState("downloading");
+    await new Promise((r) => requestAnimationFrame(r));
     try {
-      await updateRef.current.downloadAndInstall();
-      setState("ready");
+      const update = await checkForUpdate();
+      if (update) {
+        await update.downloadAndInstall();
+        setState("ready");
+      } else {
+        setState("available");
+      }
     } catch {
       setState("available");
     }
