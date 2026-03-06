@@ -1,27 +1,25 @@
-import { useEffect, useState, useTransition } from "react";
+import { useEffect, useRef, useState, memo } from "react";
 import { useTranslation } from "react-i18next";
 import { Download, RefreshCw, X } from "lucide-react";
 import { checkForUpdate, type Update } from "../commands/updater-commands";
 
 type UpdateState = "idle" | "available" | "downloading" | "ready";
 
-export function UpdateNotification() {
+export const UpdateNotification = memo(function UpdateNotification() {
   const { t } = useTranslation();
   const [state, setState] = useState<UpdateState>("idle");
-  const [update, setUpdate] = useState<Update | null>(null);
+  const updateRef = useRef<Update | null>(null);
+  const [version, setVersion] = useState("");
   const [dismissed, setDismissed] = useState(false);
-  const [, startTransition] = useTransition();
 
   useEffect(() => {
     const scheduleCheck = () => {
       checkForUpdate()
         .then((u) => {
           if (u) {
-            // startTransition で低優先度レンダリングにしてUIブロックを防ぐ
-            startTransition(() => {
-              setUpdate(u);
-              setState("available");
-            });
+            updateRef.current = u;
+            setVersion(u.version);
+            setState("available");
           }
         })
         .catch((err) => {
@@ -29,7 +27,6 @@ export function UpdateNotification() {
         });
     };
 
-    // UIがアイドル状態になってから更新チェックを実行
     const timer = setTimeout(() => {
       if ("requestIdleCallback" in window) {
         requestIdleCallback(() => scheduleCheck(), { timeout: 10000 });
@@ -41,24 +38,27 @@ export function UpdateNotification() {
   }, []);
 
   async function handleUpdate() {
-    if (!update) return;
+    if (!updateRef.current) return;
     setState("downloading");
     try {
-      await update.downloadAndInstall();
+      await updateRef.current.downloadAndInstall();
       setState("ready");
     } catch {
       setState("available");
     }
   }
 
-  if (state === "idle" || dismissed) return null;
+  const visible = state !== "idle" && !dismissed;
 
   return (
-    <div className="flex items-center gap-2 px-3 py-1.5 bg-[var(--color-accent)]/15 text-[var(--color-accent-light)] text-sm border-b border-[var(--color-border)]">
+    <div
+      className="items-center gap-2 px-3 py-1.5 bg-[var(--color-accent)]/15 text-[var(--color-accent-light)] text-sm border-b border-[var(--color-border)]"
+      style={{ display: visible ? "flex" : "none" }}
+    >
       {state === "available" && (
         <>
           <Download size={14} />
-          <span>{t("updater.available", { version: update?.version ?? "" })}</span>
+          <span>{t("updater.available", { version })}</span>
           <button
             onClick={handleUpdate}
             className="px-2 py-0.5 rounded bg-[var(--color-accent)] text-white text-xs hover:opacity-90 transition-opacity"
@@ -88,4 +88,4 @@ export function UpdateNotification() {
       )}
     </div>
   );
-}
+});
