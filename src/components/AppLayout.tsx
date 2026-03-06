@@ -1,5 +1,6 @@
 import { useEffect, useState, useCallback, useRef, lazy, Suspense } from "react";
 import { useTranslation } from "react-i18next";
+import { getCurrentWindow } from "@tauri-apps/api/window";
 import { useTabStore } from "../stores/tab-store";
 import { useFileStore } from "../stores/file-store";
 import { useUIStore } from "../stores/ui-store";
@@ -22,22 +23,22 @@ import { useMouseNavigation } from "../hooks/use-mouse-navigation";
 import { TabBar } from "./TabBar";
 import { Toolbar } from "./Toolbar";
 import { Sidebar } from "./Sidebar";
-import { ListView } from "./ListView";
-import { GridView } from "./GridView";
 import { StatusBar } from "./StatusBar";
 import { ContextMenu } from "./ContextMenu";
-import { NewFolderDialog } from "./NewFolderDialog";
-import { RenameDialog } from "./RenameDialog";
-import { DeleteConfirmDialog } from "./DeleteConfirmDialog";
-import { SearchDialog } from "./SearchDialog";
-import { FilePreviewDialog } from "./FilePreviewDialog";
 import { EmptyState } from "./EmptyState";
-import { UpdateNotification } from "./UpdateNotification";
 import { Spinner } from "./Spinner";
 import type { FileEntry } from "../types";
 
+const ListView = lazy(() => import("./ListView").then((m) => ({ default: m.ListView })));
+const GridView = lazy(() => import("./GridView").then((m) => ({ default: m.GridView })));
 const TerminalPane = lazy(() => import("./TerminalPane").then((m) => ({ default: m.TerminalPane })));
 const SettingsDialog = lazy(() => import("./SettingsDialog").then((m) => ({ default: m.SettingsDialog })));
+const NewFolderDialog = lazy(() => import("./NewFolderDialog").then((m) => ({ default: m.NewFolderDialog })));
+const RenameDialog = lazy(() => import("./RenameDialog").then((m) => ({ default: m.RenameDialog })));
+const DeleteConfirmDialog = lazy(() => import("./DeleteConfirmDialog").then((m) => ({ default: m.DeleteConfirmDialog })));
+const SearchDialog = lazy(() => import("./SearchDialog").then((m) => ({ default: m.SearchDialog })));
+const FilePreviewDialog = lazy(() => import("./FilePreviewDialog").then((m) => ({ default: m.FilePreviewDialog })));
+const UpdateNotification = lazy(() => import("./UpdateNotification").then((m) => ({ default: m.UpdateNotification })));
 
 export function AppLayout() {
   const { t } = useTranslation();
@@ -125,17 +126,30 @@ export function AppLayout() {
   );
 
   useEffect(() => {
+    const showWindow = () => {
+      try {
+        getCurrentWindow().show().catch(() => {});
+      } catch {
+        // not in Tauri context
+      }
+    };
+
     if (tabs.length === 0) {
       getHomeDir()
         .then((home) => {
           addTab(home);
           return loadDirectory(home);
         })
+        .then(() => showWindow())
         .catch((err) => {
           console.error("Init failed:", err);
           addTab("/");
-          loadDirectory("/").catch(console.error);
+          loadDirectory("/")
+            .then(() => showWindow())
+            .catch(() => showWindow());
         });
+    } else {
+      showWindow();
     }
   }, []);
 
@@ -190,7 +204,9 @@ export function AppLayout() {
     <div className="flex flex-col h-screen bg-[var(--color-bg)] text-[var(--color-text)]">
       <TabBar />
       <Toolbar onSettingsOpen={() => setSettingsOpen(true)} />
-      <UpdateNotification />
+      <Suspense fallback={null}>
+        <UpdateNotification />
+      </Suspense>
       <div className="flex flex-1 min-h-0">
         {sidebarVisible && <Sidebar />}
         <main className="flex-1 min-w-0 flex flex-col">
@@ -202,9 +218,11 @@ export function AppLayout() {
           )}
           {!loading && !error && entries.length === 0 && <EmptyState />}
           {!loading && !error && entries.length > 0 && (
-            viewMode === "list"
-              ? <ListView onContextMenu={showContextMenu} onFileOpen={handleFileOpen} />
-              : <GridView onContextMenu={showContextMenu} onFileOpen={handleFileOpen} />
+            <Suspense fallback={null}>
+              {viewMode === "list"
+                ? <ListView onContextMenu={showContextMenu} onFileOpen={handleFileOpen} />
+                : <GridView onContextMenu={showContextMenu} onFileOpen={handleFileOpen} />}
+            </Suspense>
           )}
         </main>
         {terminalVisible && (
@@ -235,32 +253,52 @@ export function AppLayout() {
         onClose={hideContextMenu}
         items={contextMenuItems}
       />
-      <NewFolderDialog
-        open={newFolderOpen}
-        onClose={() => setNewFolderOpen(false)}
-        onCreate={handleCreateFolder}
-      />
-      <RenameDialog
-        open={renameOpen}
-        currentName={selectedEntry?.name || ""}
-        onClose={() => setRenameOpen(false)}
-        onRename={handleRename}
-      />
-      <DeleteConfirmDialog
-        open={deleteOpen}
-        count={selectedPaths.size}
-        onClose={() => setDeleteOpen(false)}
-        onConfirm={handleDelete}
-      />
-      <SearchDialog
-        open={searchOpen}
-        onClose={() => setSearchOpen(false)}
-      />
-      <FilePreviewDialog
-        open={!!previewEntry}
-        entry={previewEntry}
-        onClose={() => setPreviewEntry(null)}
-      />
+      {newFolderOpen && (
+        <Suspense fallback={null}>
+          <NewFolderDialog
+            open={newFolderOpen}
+            onClose={() => setNewFolderOpen(false)}
+            onCreate={handleCreateFolder}
+          />
+        </Suspense>
+      )}
+      {renameOpen && (
+        <Suspense fallback={null}>
+          <RenameDialog
+            open={renameOpen}
+            currentName={selectedEntry?.name || ""}
+            onClose={() => setRenameOpen(false)}
+            onRename={handleRename}
+          />
+        </Suspense>
+      )}
+      {deleteOpen && (
+        <Suspense fallback={null}>
+          <DeleteConfirmDialog
+            open={deleteOpen}
+            count={selectedPaths.size}
+            onClose={() => setDeleteOpen(false)}
+            onConfirm={handleDelete}
+          />
+        </Suspense>
+      )}
+      {searchOpen && (
+        <Suspense fallback={null}>
+          <SearchDialog
+            open={searchOpen}
+            onClose={() => setSearchOpen(false)}
+          />
+        </Suspense>
+      )}
+      {previewEntry && (
+        <Suspense fallback={null}>
+          <FilePreviewDialog
+            open={!!previewEntry}
+            entry={previewEntry}
+            onClose={() => setPreviewEntry(null)}
+          />
+        </Suspense>
+      )}
       {settingsOpen && (
         <Suspense fallback={null}>
           <SettingsDialog
