@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useTransition } from "react";
 import { useTranslation } from "react-i18next";
 import { Download, RefreshCw, X } from "lucide-react";
 import { checkForUpdate, type Update } from "../commands/updater-commands";
@@ -9,22 +9,33 @@ export function UpdateNotification() {
   const { t } = useTranslation();
   const [state, setState] = useState<UpdateState>("idle");
   const [update, setUpdate] = useState<Update | null>(null);
-  const [version, setVersion] = useState("");
   const [dismissed, setDismissed] = useState(false);
+  const [, startTransition] = useTransition();
 
   useEffect(() => {
-    const timer = setTimeout(() => {
+    const scheduleCheck = () => {
       checkForUpdate()
         .then((u) => {
           if (u) {
-            setUpdate(u);
-            setVersion(u.version);
-            setState("available");
+            // startTransition で低優先度レンダリングにしてUIブロックを防ぐ
+            startTransition(() => {
+              setUpdate(u);
+              setState("available");
+            });
           }
         })
         .catch((err) => {
           console.error("[updater] check failed:", err);
         });
+    };
+
+    // UIがアイドル状態になってから更新チェックを実行
+    const timer = setTimeout(() => {
+      if ("requestIdleCallback" in window) {
+        requestIdleCallback(() => scheduleCheck(), { timeout: 10000 });
+      } else {
+        scheduleCheck();
+      }
     }, 5000);
     return () => clearTimeout(timer);
   }, []);
@@ -47,7 +58,7 @@ export function UpdateNotification() {
       {state === "available" && (
         <>
           <Download size={14} />
-          <span>{t("updater.available", { version })}</span>
+          <span>{t("updater.available", { version: update?.version ?? "" })}</span>
           <button
             onClick={handleUpdate}
             className="px-2 py-0.5 rounded bg-[var(--color-accent)] text-white text-xs hover:opacity-90 transition-opacity"
