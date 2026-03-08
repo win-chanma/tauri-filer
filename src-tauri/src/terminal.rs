@@ -46,9 +46,12 @@ fn default_shell() -> String {
 
 #[cfg(target_os = "windows")]
 fn which_exists(name: &str) -> bool {
+    use std::os::windows::process::CommandExt;
     use std::process::Command;
+    const CREATE_NO_WINDOW: u32 = 0x0800_0000;
     Command::new("where")
         .arg(name)
+        .creation_flags(CREATE_NO_WINDOW)
         .output()
         .map(|o| o.status.success())
         .unwrap_or(false)
