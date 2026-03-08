@@ -47,6 +47,8 @@ export function SettingsDialog({ open, onClose }: SettingsDialogProps) {
   const setWindowTransparency = useUIStore((s) => s.setWindowTransparency);
   const windowOpacity = useUIStore((s) => s.windowOpacity);
   const setWindowOpacity = useUIStore((s) => s.setWindowOpacity);
+  const showSplash = useUIStore((s) => s.showSplash);
+  const setShowSplash = useUIStore((s) => s.setShowSplash);
   const dialogRef = useRef<HTMLDivElement>(null);
   const [activeSection, setActiveSection] = useState<SectionId>("display");
   const [themes, setThemes] = useState<Theme[]>([]);
@@ -233,6 +235,17 @@ export function SettingsDialog({ open, onClose }: SettingsDialogProps) {
                     </div>
                   </SettingRow>
                 )}
+
+                <SettingRow
+                  label={t("settings.showSplash")}
+                  description={t("settings.showSplashDesc")}
+                >
+                  <ToggleSwitch
+                    checked={showSplash}
+                    onChange={() => setShowSplash(!showSplash)}
+                    aria-label="Show boot splash"
+                  />
+                </SettingRow>
               </SettingsPane>
             )}
 

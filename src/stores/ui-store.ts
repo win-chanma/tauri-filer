@@ -16,6 +16,7 @@ interface UISettings {
   terminalPadding: number;
   windowTransparency: boolean;
   windowOpacity: number;
+  showSplash: boolean;
 }
 
 interface UIStore extends UISettings {
@@ -30,6 +31,7 @@ interface UIStore extends UISettings {
   setTerminalPadding: (padding: number) => void;
   setWindowTransparency: (enabled: boolean) => void;
   setWindowOpacity: (opacity: number) => void;
+  setShowSplash: (show: boolean) => void;
 }
 
 const STORAGE_KEY = "tauri-filer-ui-settings";
@@ -59,6 +61,7 @@ const defaults: UISettings = {
   terminalPadding: 8,
   windowTransparency: false,
   windowOpacity: 80,
+  showSplash: true,
 };
 
 const initial: UISettings = { ...defaults, ...loadSettings() };
@@ -76,6 +79,7 @@ function getSettings(state: UIStore): UISettings {
     terminalPadding: state.terminalPadding,
     windowTransparency: state.windowTransparency,
     windowOpacity: state.windowOpacity,
+    showSplash: state.showSplash,
   };
 }
 
@@ -165,5 +169,9 @@ export const useUIStore = create<UIStore>((set, get) => ({
         s.windowTransparency ? opacity / 100 : undefined,
       );
     });
+  },
+  setShowSplash: (show) => {
+    set({ showSplash: show });
+    saveSettings(getSettings(get()));
   },
 }));
