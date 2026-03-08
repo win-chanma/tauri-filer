@@ -4,11 +4,12 @@ import { useFileStore } from "../stores/file-store";
 import { useUIStore } from "../stores/ui-store";
 import { useClipboardStore } from "../stores/clipboard-store";
 import { useNavigation } from "./use-navigation";
-import { copyItems, moveItems, getHomeDir } from "../commands/fs-commands";
+import { getHomeDir } from "../commands/fs-commands";
 import {
   readClipboardFiles,
   writeClipboardFiles,
 } from "../commands/clipboard-commands";
+import { pasteWithConflictCheck, type PasteResult } from "../utils/paste-with-conflicts";
 
 interface ShortcutActions {
   onNewFolder: () => void;
@@ -16,6 +17,7 @@ interface ShortcutActions {
   onDelete: () => void;
   onSearch: () => void;
   onFileOpen: (entry: FileEntry) => void;
+  onConflict: (result: PasteResult) => void;
 }
 
 import type { FileEntry } from "../types";
@@ -74,7 +76,6 @@ export function useKeyboardShortcuts(actions: ShortcutActions) {
         );
         if (!tab) return;
 
-        // Try OS clipboard first, fall back to internal
         let pastePaths = clipboardPaths;
         let pasteMode = clipboardMode;
         try {
@@ -89,13 +90,17 @@ export function useKeyboardShortcuts(actions: ShortcutActions) {
 
         if (pastePaths.length === 0) return;
         try {
-          if (pasteMode === "copy") {
-            await copyItems(pastePaths, tab.path);
-          } else if (pasteMode === "cut") {
-            await moveItems(pastePaths, tab.path);
-            useClipboardStore.getState().clear();
+          const result = await pasteWithConflictCheck({
+            paths: pastePaths,
+            mode: pasteMode,
+            destination: tab.path,
+          });
+          if (result) {
+            actions.onConflict(result);
+          } else {
+            if (pasteMode === "cut") useClipboardStore.getState().clear();
+            refresh();
           }
-          refresh();
         } catch (err) {
           console.error("Paste failed:", err);
         }
