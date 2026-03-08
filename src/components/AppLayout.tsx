@@ -38,7 +38,6 @@ const RenameDialog = lazy(() => import("./RenameDialog").then((m) => ({ default:
 const DeleteConfirmDialog = lazy(() => import("./DeleteConfirmDialog").then((m) => ({ default: m.DeleteConfirmDialog })));
 const SearchDialog = lazy(() => import("./SearchDialog").then((m) => ({ default: m.SearchDialog })));
 const FilePreviewDialog = lazy(() => import("./FilePreviewDialog").then((m) => ({ default: m.FilePreviewDialog })));
-import { UpdateNotification } from "./UpdateNotification";
 
 export function AppLayout() {
   const { t } = useTranslation();
@@ -198,7 +197,6 @@ export function AppLayout() {
     <div className="flex flex-col h-screen bg-[var(--color-bg)] text-[var(--color-text)]">
       <TabBar />
       <Toolbar onSettingsOpen={() => setSettingsOpen(true)} />
-      <UpdateNotification />
       <div className="flex flex-1 min-h-0">
         {sidebarVisible && <Sidebar />}
         <main className="flex-1 min-w-0 flex flex-col">

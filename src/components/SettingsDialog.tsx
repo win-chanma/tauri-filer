@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useUIStore } from "../stores/ui-store";
+import { checkUpdateVersion, checkForUpdate } from "../commands/updater-commands";
 import {
   X,
   List,
@@ -11,6 +12,8 @@ import {
   Palette,
   TerminalSquare,
   Info,
+  Download,
+  RefreshCw,
 } from "lucide-react";
 import type { Language, Theme, ThemeId } from "../types";
 import { loadAllThemes } from "../themes";
@@ -48,6 +51,8 @@ export function SettingsDialog({ open, onClose }: SettingsDialogProps) {
   const [activeSection, setActiveSection] = useState<SectionId>("display");
   const [themes, setThemes] = useState<Theme[]>([]);
   const [appVersion, setAppVersion] = useState("");
+  const [updateState, setUpdateState] = useState<"idle" | "checking" | "available" | "downloading" | "ready" | "none">("idle");
+  const [updateVersion, setUpdateVersion] = useState("");
 
   useEffect(() => {
     if (open) {
@@ -326,6 +331,44 @@ export function SettingsDialog({ open, onClose }: SettingsDialogProps) {
                     {appVersion || "—"}
                   </span>
                 </SettingRow>
+                <SettingRow
+                  label={t("settings.updateCheck")}
+                  description={t("settings.updateCheckDesc")}
+                >
+                  <UpdateCheckButton
+                    state={updateState}
+                    version={updateVersion}
+                    onCheck={async () => {
+                      setUpdateState("checking");
+                      try {
+                        const v = await checkUpdateVersion();
+                        if (v) {
+                          setUpdateVersion(v);
+                          setUpdateState("available");
+                        } else {
+                          setUpdateState("none");
+                        }
+                      } catch {
+                        setUpdateState("idle");
+                      }
+                    }}
+                    onInstall={async () => {
+                      setUpdateState("downloading");
+                      try {
+                        const update = await checkForUpdate();
+                        if (update) {
+                          await update.downloadAndInstall();
+                          setUpdateState("ready");
+                        } else {
+                          setUpdateState("available");
+                        }
+                      } catch {
+                        setUpdateState("available");
+                      }
+                    }}
+                    t={t}
+                  />
+                </SettingRow>
               </SettingsPane>
             )}
           </div>
@@ -504,6 +547,70 @@ function ThemeSwatch({
       <span className="text-xs text-[var(--color-text-dim)] truncate w-full text-center">
         {name}
       </span>
+    </button>
+  );
+}
+
+function UpdateCheckButton({
+  state,
+  version,
+  onCheck,
+  onInstall,
+  t,
+}: {
+  state: "idle" | "checking" | "available" | "downloading" | "ready" | "none";
+  version: string;
+  onCheck: () => void;
+  onInstall: () => void;
+  t: (key: string, opts?: Record<string, string>) => string;
+}) {
+  if (state === "checking") {
+    return (
+      <span className="flex items-center gap-2 text-[13px] text-[var(--color-text-muted)]">
+        <RefreshCw size={14} className="animate-spin" />
+        {t("updater.checking")}
+      </span>
+    );
+  }
+  if (state === "available") {
+    return (
+      <button
+        onClick={onInstall}
+        className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-[var(--color-accent)] text-white text-[13px] font-medium hover:opacity-90 transition-opacity"
+      >
+        <Download size={14} />
+        {t("updater.available", { version })}
+      </button>
+    );
+  }
+  if (state === "downloading") {
+    return (
+      <span className="flex items-center gap-2 text-[13px] text-[var(--color-text-muted)]">
+        <RefreshCw size={14} className="animate-spin" />
+        {t("updater.downloading")}
+      </span>
+    );
+  }
+  if (state === "ready") {
+    return (
+      <span className="text-[13px] font-medium text-green-400">
+        {t("updater.ready")}
+      </span>
+    );
+  }
+  if (state === "none") {
+    return (
+      <span className="text-[13px] text-[var(--color-text-muted)]">
+        {t("updater.upToDate")}
+      </span>
+    );
+  }
+  return (
+    <button
+      onClick={onCheck}
+      className="px-3 py-1.5 rounded-lg bg-[var(--color-bg)] border border-[var(--color-border)] text-[13px] font-medium text-[var(--color-text)] hover:border-[var(--color-text-muted)] transition-colors"
+    >
+      {t("updater.checkButton")}
     </button>
   );
 }
