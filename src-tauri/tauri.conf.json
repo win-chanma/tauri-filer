@@ -19,7 +19,8 @@
         "minHeight": 480,
         "transparent": true,
         "shadow": false,
-        "visible": true
+        "visible": true,
+        "backgroundColor": "#0a0a0f"
       }
     ],
     "security": {

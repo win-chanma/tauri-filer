@@ -598,19 +598,19 @@ function UpdateCheckButton({
       </span>
     );
   }
-  if (state === "none") {
-    return (
-      <span className="text-[13px] text-[var(--color-text-muted)]">
-        {t("updater.upToDate")}
-      </span>
-    );
-  }
   return (
-    <button
-      onClick={onCheck}
-      className="px-3 py-1.5 rounded-lg bg-[var(--color-bg)] border border-[var(--color-border)] text-[13px] font-medium text-[var(--color-text)] hover:border-[var(--color-text-muted)] transition-colors"
-    >
-      {t("updater.checkButton")}
-    </button>
+    <div className="flex items-center gap-3">
+      <button
+        onClick={onCheck}
+        className="px-3 py-1.5 rounded-lg bg-[var(--color-bg)] border border-[var(--color-border)] text-[13px] font-medium text-[var(--color-text)] hover:border-[var(--color-text-muted)] transition-colors"
+      >
+        {t("updater.checkButton")}
+      </button>
+      {state === "none" && (
+        <span className="text-[13px] text-[var(--color-text-muted)]">
+          {t("updater.upToDate")}
+        </span>
+      )}
+    </div>
   );
 }

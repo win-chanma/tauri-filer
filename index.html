@@ -7,12 +7,45 @@
     <title>Tauri Filer</title>
   </head>
   <body>
-    <div id="root">
-      <div style="display:flex;align-items:center;justify-content:center;height:100vh;background:#0a0a0f">
-        <div style="width:32px;height:32px;border:3px solid #2a2a3a;border-top-color:#6366f1;border-radius:50%;animation:spin 0.8s linear infinite"></div>
+    <div id="boot-screen">
+      <div class="boot-container">
+        <div class="boot-title">TAURI FILER</div>
+        <div class="boot-scan"></div>
+        <div class="boot-lines">
+          <span class="line l1"><i>OK</i>Core system initialized</span>
+          <span class="line l2"><i>OK</i>Loading file subsystem</span>
+          <span class="line l3"><i>OK</i>Preparing workspace</span>
+          <span class="line l4"><i>&gt;&gt;</i>Starting interface<span class="blink">_</span></span>
+        </div>
+        <div class="boot-bar-track">
+          <div class="boot-bar-fill"></div>
+        </div>
       </div>
-      <style>@keyframes spin{to{transform:rotate(360deg)}}</style>
+      <style>
+        #boot-screen{position:fixed;inset:0;z-index:9999;display:flex;align-items:center;justify-content:center;background:#0a0a0f;font-family:'Consolas','Courier New',monospace;color:#64748b;overflow:hidden;transition:opacity .3s ease-out}
+        #boot-screen.fade-out{opacity:0;pointer-events:none}
+        .boot-container{display:flex;flex-direction:column;align-items:center;gap:16px;opacity:0;animation:fadeUp .3s ease-out .05s forwards}
+        .boot-title{font-size:20px;font-weight:700;letter-spacing:6px;color:#818cf8;text-shadow:0 0 20px rgba(99,102,241,.3)}
+        .boot-scan{width:200px;height:1px;background:linear-gradient(90deg,transparent,#6366f1,transparent);animation:scan 1.2s ease-in-out infinite}
+        .boot-lines{display:flex;flex-direction:column;gap:4px;font-size:11px;min-width:240px}
+        .line{opacity:0;display:flex;align-items:center;gap:8px}
+        .line i{font-style:normal;color:#22d3ee;min-width:20px;text-align:center;font-size:10px}
+        .l1{animation:fadeIn .15s ease .1s forwards}
+        .l2{animation:fadeIn .15s ease .25s forwards}
+        .l3{animation:fadeIn .15s ease .4s forwards}
+        .l4{animation:fadeIn .15s ease .55s forwards}
+        .l4 i{color:#818cf8}
+        .blink{animation:blink .6s step-end infinite}
+        .boot-bar-track{width:200px;height:2px;background:#1a1a28;border-radius:1px;overflow:hidden;opacity:0;animation:fadeIn .15s ease .15s forwards}
+        .boot-bar-fill{width:0;height:100%;background:linear-gradient(90deg,#6366f1,#818cf8);animation:fill .8s ease-out .2s forwards}
+        @keyframes fadeUp{to{opacity:1;transform:translateY(0)}from{opacity:0;transform:translateY(8px)}}
+        @keyframes fadeIn{to{opacity:1}}
+        @keyframes scan{0%,100%{opacity:.3;transform:scaleX(.5)}50%{opacity:1;transform:scaleX(1)}}
+        @keyframes blink{50%{opacity:0}}
+        @keyframes fill{to{width:100%}}
+      </style>
     </div>
+    <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>
