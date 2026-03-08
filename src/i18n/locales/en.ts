@@ -117,11 +117,18 @@ export const en = {
   "settings.sectionAbout": "About",
   "settings.aboutVersion": "Version",
 
+  // Settings - About (Update)
+  "settings.updateCheck": "Update",
+  "settings.updateCheckDesc": "Check for new versions",
+
   // Updater
+  "updater.checkButton": "Check for updates",
+  "updater.checking": "Checking...",
   "updater.available": "v{{version}} is available",
   "updater.install": "Update",
   "updater.downloading": "Downloading update...",
   "updater.ready": "Update complete — please restart the app",
+  "updater.upToDate": "You're up to date",
   "updater.restart": "Restart",
   "updater.dismiss": "Dismiss",
 } as const;

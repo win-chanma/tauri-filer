@@ -117,11 +117,18 @@ export const ja = {
   "settings.sectionAbout": "アプリについて",
   "settings.aboutVersion": "バージョン",
 
+  // Settings - About (Update)
+  "settings.updateCheck": "アップデート",
+  "settings.updateCheckDesc": "新しいバージョンがあるか確認します",
+
   // Updater
+  "updater.checkButton": "更新を確認",
+  "updater.checking": "確認中...",
   "updater.available": "v{{version}} が利用可能です",
   "updater.install": "更新する",
   "updater.downloading": "更新をダウンロード中...",
   "updater.ready": "更新完了 — アプリを再起動してください",
+  "updater.upToDate": "最新バージョンです",
   "updater.restart": "再起動",
   "updater.dismiss": "閉じる",
 } as const;
