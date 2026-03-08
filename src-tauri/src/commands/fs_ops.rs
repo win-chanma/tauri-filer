@@ -95,8 +95,19 @@ pub fn move_items(sources: Vec<String>, destination: String) -> Result<(), Strin
             .ok_or_else(|| format!("ファイル名が取得できません: {}", source))?;
         let dest = dest_path.join(file_name);
 
-        std::fs::rename(src_path, &dest)
-            .map_err(|e| format!("移動失敗: {} -> {}: {}", source, dest.display(), e))?;
+        // rename fails across drives, fall back to copy + delete
+        if std::fs::rename(src_path, &dest).is_err() {
+            if src_path.is_dir() {
+                copy_dir_recursive(src_path, &dest)?;
+                std::fs::remove_dir_all(src_path)
+                    .map_err(|e| format!("移動元の削除失敗: {}: {}", source, e))?;
+            } else {
+                std::fs::copy(src_path, &dest)
+                    .map_err(|e| format!("コピー失敗: {} -> {}: {}", source, dest.display(), e))?;
+                std::fs::remove_file(src_path)
+                    .map_err(|e| format!("移動元の削除失敗: {}: {}", source, e))?;
+            }
+        }
     }
 
     Ok(())
