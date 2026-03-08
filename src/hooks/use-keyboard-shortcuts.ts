@@ -5,6 +5,10 @@ import { useUIStore } from "../stores/ui-store";
 import { useClipboardStore } from "../stores/clipboard-store";
 import { useNavigation } from "./use-navigation";
 import { copyItems, moveItems, getHomeDir } from "../commands/fs-commands";
+import {
+  readClipboardFiles,
+  writeClipboardFiles,
+} from "../commands/clipboard-commands";
 
 interface ShortcutActions {
   onNewFolder: () => void;
@@ -42,14 +46,20 @@ export function useKeyboardShortcuts(actions: ShortcutActions) {
       if (ctrl && !shift && key === "c") {
         e.preventDefault();
         const paths = Array.from(selectedPaths);
-        if (paths.length > 0) useClipboardStore.getState().copy(paths);
+        if (paths.length > 0) {
+          useClipboardStore.getState().copy(paths);
+          writeClipboardFiles(paths, "copy").catch(() => {});
+        }
         return;
       }
       // Ctrl+X: Cut
       if (ctrl && !shift && key === "x") {
         e.preventDefault();
         const paths = Array.from(selectedPaths);
-        if (paths.length > 0) useClipboardStore.getState().cut(paths);
+        if (paths.length > 0) {
+          useClipboardStore.getState().cut(paths);
+          writeClipboardFiles(paths, "cut").catch(() => {});
+        }
         return;
       }
       // Ctrl+V: Paste
@@ -58,12 +68,27 @@ export function useKeyboardShortcuts(actions: ShortcutActions) {
         const tab = useTabStore.getState().tabs.find(
           (t) => t.id === useTabStore.getState().activeTabId
         );
-        if (!tab || clipboardPaths.length === 0) return;
+        if (!tab) return;
+
+        // Try OS clipboard first, fall back to internal
+        let pastePaths = clipboardPaths;
+        let pasteMode = clipboardMode;
         try {
-          if (clipboardMode === "copy") {
-            await copyItems(clipboardPaths, tab.path);
-          } else if (clipboardMode === "cut") {
-            await moveItems(clipboardPaths, tab.path);
+          const osClip = await readClipboardFiles();
+          if (osClip.paths.length > 0) {
+            pastePaths = osClip.paths;
+            pasteMode = osClip.mode;
+          }
+        } catch {
+          // OS clipboard unavailable, use internal
+        }
+
+        if (pastePaths.length === 0) return;
+        try {
+          if (pasteMode === "copy") {
+            await copyItems(pastePaths, tab.path);
+          } else if (pasteMode === "cut") {
+            await moveItems(pastePaths, tab.path);
             useClipboardStore.getState().clear();
           }
           refresh();

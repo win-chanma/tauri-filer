@@ -40,6 +40,8 @@ pub fn run() {
             terminal::terminal_resize,
             terminal::terminal_kill,
             check_update_version,
+            read_clipboard_files,
+            write_clipboard_files,
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
