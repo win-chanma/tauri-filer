@@ -29,7 +29,6 @@ export function useDragDrop() {
 
       try {
         const sources: string[] = JSON.parse(raw);
-        // 自分自身へのドロップは無視
         if (sources.includes(targetDir)) return;
         await moveItems(sources, targetDir);
       } catch (err) {

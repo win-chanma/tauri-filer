@@ -20,6 +20,7 @@
     "shell:default",
     "shell:allow-open",
     "updater:default",
+    "drag:default",
     {
       "identifier": "fs:scope",
       "allow": [
