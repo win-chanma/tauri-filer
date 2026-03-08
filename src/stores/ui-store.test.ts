@@ -185,4 +185,36 @@ describe("uiStore", () => {
       expect(stored.terminalFontSize).toBe(12);
     });
   });
+
+  describe("setShowSplash", () => {
+    it("初期値はtrue", () => {
+      expect(useUIStore.getState().showSplash).toBe(true);
+    });
+
+    it("falseに設定する", () => {
+      useUIStore.getState().setShowSplash(false);
+      expect(useUIStore.getState().showSplash).toBe(false);
+    });
+
+    it("trueに戻す", () => {
+      useUIStore.getState().setShowSplash(false);
+      useUIStore.getState().setShowSplash(true);
+      expect(useUIStore.getState().showSplash).toBe(true);
+    });
+
+    it("setShowSplashでlocalStorageに保存される", () => {
+      useUIStore.getState().setShowSplash(false);
+      const stored = JSON.parse(localStorage.getItem(STORAGE_KEY)!);
+      expect(stored.showSplash).toBe(false);
+    });
+
+    it("localStorageから復元される", () => {
+      localStorage.setItem(
+        STORAGE_KEY,
+        JSON.stringify({ showSplash: false })
+      );
+      const settings = loadSettings();
+      expect(settings.showSplash).toBe(false);
+    });
+  });
 });
