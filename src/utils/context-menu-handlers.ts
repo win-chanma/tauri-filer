@@ -1,4 +1,5 @@
 import type { FileEntry } from "../types";
+import { readClipboardFiles } from "../commands/clipboard-commands";
 
 export interface ContextMenuDeps {
   getActiveTabPath: () => string | null;
@@ -33,12 +34,27 @@ export function createContextMenuHandlers(deps: ContextMenuDeps) {
 
   const handlePaste = async () => {
     const tabPath = deps.getActiveTabPath();
-    if (!tabPath || deps.clipboardPaths.length === 0) return;
+    if (!tabPath) return;
+
+    // Try OS clipboard first, fall back to internal
+    let pastePaths = deps.clipboardPaths;
+    let pasteMode = deps.clipboardMode;
     try {
-      if (deps.clipboardMode === "copy") {
-        await deps.copyItems(deps.clipboardPaths, tabPath);
-      } else if (deps.clipboardMode === "cut") {
-        await deps.moveItems(deps.clipboardPaths, tabPath);
+      const osClip = await readClipboardFiles();
+      if (osClip.paths.length > 0) {
+        pastePaths = osClip.paths;
+        pasteMode = osClip.mode;
+      }
+    } catch {
+      // OS clipboard unavailable, use internal
+    }
+
+    if (pastePaths.length === 0) return;
+    try {
+      if (pasteMode === "copy") {
+        await deps.copyItems(pastePaths, tabPath);
+      } else if (pasteMode === "cut") {
+        await deps.moveItems(pastePaths, tabPath);
         deps.clipboardClear();
       }
       deps.refresh();
