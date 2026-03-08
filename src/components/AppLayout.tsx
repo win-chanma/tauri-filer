@@ -26,7 +26,7 @@ import { Sidebar } from "./Sidebar";
 import { StatusBar } from "./StatusBar";
 import { ContextMenu } from "./ContextMenu";
 import { EmptyState } from "./EmptyState";
-import { Spinner } from "./Spinner";
+import { FileListSkeleton } from "./FileListSkeleton";
 import type { FileEntry } from "../types";
 
 const ListView = lazy(() => import("./ListView").then((m) => ({ default: m.ListView })));
@@ -126,13 +126,12 @@ export function AppLayout() {
   );
 
   useEffect(() => {
-    const showWindow = () => {
-      try {
-        getCurrentWindow().show().catch(() => {});
-      } catch {
-        // not in Tauri context
-      }
-    };
+    // Show window immediately — skeleton UI is already visible
+    try {
+      getCurrentWindow().show().catch(() => {});
+    } catch {
+      // not in Tauri context
+    }
 
     if (tabs.length === 0) {
       getHomeDir()
@@ -140,16 +139,11 @@ export function AppLayout() {
           addTab(home);
           return loadDirectory(home);
         })
-        .then(() => showWindow())
         .catch((err) => {
           console.error("Init failed:", err);
           addTab("/");
-          loadDirectory("/")
-            .then(() => showWindow())
-            .catch(() => showWindow());
+          loadDirectory("/").catch(() => {});
         });
-    } else {
-      showWindow();
     }
   }, []);
 
@@ -208,7 +202,7 @@ export function AppLayout() {
       <div className="flex flex-1 min-h-0">
         {sidebarVisible && <Sidebar />}
         <main className="flex-1 min-w-0 flex flex-col">
-          {loading && <Spinner />}
+          {loading && <FileListSkeleton />}
           {error && (
             <div className="flex items-center justify-center py-8 text-[var(--color-danger-hover)] text-sm">
               {error}

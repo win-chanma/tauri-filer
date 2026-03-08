@@ -26,7 +26,7 @@ export const useFileStore = create<FileStore>((set, get) => ({
   selectedPaths: new Set(),
   lastSelectedPath: null,
   sortConfig: { key: "name", order: "asc" },
-  loading: false,
+  loading: true,
   error: null,
 
   loadDirectory: async (path) => {
