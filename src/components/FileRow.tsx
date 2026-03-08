@@ -8,6 +8,7 @@ import { getFileOpacity } from "../utils/file-opacity";
 interface FileRowProps {
   entry: FileEntry;
   selected: boolean;
+  focused?: boolean;
   isCut: boolean;
   onSelect: (e: React.MouseEvent) => void;
   onOpen: () => void;
@@ -20,6 +21,7 @@ interface FileRowProps {
 export const FileRow = memo(function FileRow({
   entry,
   selected,
+  focused,
   isCut,
   onSelect,
   onOpen,
@@ -40,7 +42,7 @@ export const FileRow = memo(function FileRow({
           : selected
             ? "bg-[var(--color-selection-bg)] text-[var(--color-text)]"
             : "text-[var(--color-text-dim)] hover:bg-white/5"
-      }${opacityClass ? ` ${opacityClass}` : ""}`}
+      }${focused && !selected ? " ring-1 ring-[var(--color-accent)]/50" : ""}${opacityClass ? ` ${opacityClass}` : ""}`}
       onClick={onSelect}
       onDoubleClick={onOpen}
       onContextMenu={(e) => {

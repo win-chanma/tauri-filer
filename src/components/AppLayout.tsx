@@ -82,6 +82,13 @@ export function AppLayout() {
     onRename: () => setRenameOpen(true),
     onDelete: () => setDeleteOpen(true),
     onSearch: () => setSearchOpen(true),
+    onFileOpen: (entry) => {
+      if (entry.isDir) {
+        navigateTo(entry.path);
+      } else {
+        openFile(entry.path).catch(console.error);
+      }
+    },
   });
 
   useMouseNavigation();

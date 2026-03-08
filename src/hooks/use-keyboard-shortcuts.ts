@@ -15,7 +15,11 @@ interface ShortcutActions {
   onRename: () => void;
   onDelete: () => void;
   onSearch: () => void;
+  onFileOpen: (entry: FileEntry) => void;
 }
+
+import type { FileEntry } from "../types";
+import { sortEntries } from "../utils/sort";
 
 export function useKeyboardShortcuts(actions: ShortcutActions) {
   const addTab = useTabStore((s) => s.addTab);
@@ -95,6 +99,69 @@ export function useKeyboardShortcuts(actions: ShortcutActions) {
         } catch (err) {
           console.error("Paste failed:", err);
         }
+        return;
+      }
+      // Arrow key navigation
+      if (!ctrl && !alt && (key === "arrowdown" || key === "arrowup" || key === "home" || key === "end")) {
+        e.preventDefault();
+        const { entries, sortConfig, focusedIndex } = useFileStore.getState();
+        const showHidden = useUIStore.getState().showHidden;
+        const sorted = sortEntries(entries, sortConfig);
+        const visible = showHidden ? sorted : sorted.filter((en) => !en.isHidden);
+        if (visible.length === 0) return;
+
+        let newIndex = focusedIndex;
+        if (key === "arrowdown") {
+          newIndex = focusedIndex < visible.length - 1 ? focusedIndex + 1 : focusedIndex;
+        } else if (key === "arrowup") {
+          newIndex = focusedIndex > 0 ? focusedIndex - 1 : 0;
+        } else if (key === "home") {
+          newIndex = 0;
+        } else if (key === "end") {
+          newIndex = visible.length - 1;
+        }
+
+        useFileStore.getState().setFocusedIndex(newIndex);
+        const target = visible[newIndex];
+        if (target) {
+          if (shift) {
+            // Shift: range from anchor to current (replace, not merge)
+            const { lastSelectedPath } = useFileStore.getState();
+            const anchorIdx = lastSelectedPath
+              ? visible.findIndex((en) => en.path === lastSelectedPath)
+              : 0;
+            const [from, to] = anchorIdx <= newIndex ? [anchorIdx, newIndex] : [newIndex, anchorIdx];
+            const range = visible.slice(from, to + 1).map((en) => en.path);
+            // Set selection without changing anchor (lastSelectedPath)
+            useFileStore.setState({ selectedPaths: new Set(range) });
+          } else {
+            useFileStore.getState().setSelectedPaths(new Set([target.path]));
+          }
+        }
+        return;
+      }
+      // Enter: Open selected
+      if (!ctrl && !alt && key === "enter") {
+        e.preventDefault();
+        const paths = Array.from(selectedPaths);
+        if (paths.length !== 1) return;
+        const { entries, sortConfig } = useFileStore.getState();
+        const sorted = sortEntries(entries, sortConfig);
+        const entry = sorted.find((en) => en.path === paths[0]);
+        if (entry) actions.onFileOpen(entry);
+        return;
+      }
+      // Escape: Clear selection
+      if (key === "escape") {
+        e.preventDefault();
+        useFileStore.getState().clearSelection();
+        useFileStore.getState().setFocusedIndex(-1);
+        return;
+      }
+      // Backspace: Go to parent directory
+      if (!ctrl && !alt && key === "backspace") {
+        e.preventDefault();
+        up();
         return;
       }
       // Delete

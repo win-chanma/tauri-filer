@@ -1,4 +1,5 @@
-import { useMemo, useCallback } from "react";
+import { useMemo, useCallback, useRef, useEffect } from "react";
+import type { VirtuosoHandle } from "react-virtuoso";
 import { useTranslation } from "react-i18next";
 import { Virtuoso } from "react-virtuoso";
 import { useFileStore } from "../stores/file-store";
@@ -38,6 +39,8 @@ export function ListView({ onContextMenu, onFileOpen }: ListViewProps) {
   const clipboardPaths = useClipboardStore((s) => s.paths);
   const clipboardMode = useClipboardStore((s) => s.mode);
   const { handleDragStart, handleDragOver, handleDrop } = useDragDrop();
+  const focusedIndex = useFileStore((s) => s.focusedIndex);
+  const virtuosoRef = useRef<VirtuosoHandle>(null);
 
   const sortedEntries = useMemo(
     () => sortEntries(entries, sortConfig),
@@ -85,13 +88,23 @@ export function ListView({ onContextMenu, onFileOpen }: ListViewProps) {
     [setSortConfig]
   );
 
+  useEffect(() => {
+    if (focusedIndex >= 0 && virtuosoRef.current) {
+      virtuosoRef.current.scrollIntoView({ index: focusedIndex, behavior: "auto" });
+    }
+  }, [focusedIndex]);
+
   const itemContent = useCallback(
-    (_index: number, entry: FileEntry) => (
+    (index: number, entry: FileEntry) => (
       <FileRow
         entry={entry}
         selected={selectedPaths.has(entry.path)}
+        focused={index === focusedIndex}
         isCut={isCutPath(entry.path, clipboardPaths, clipboardMode)}
-        onSelect={(e) => handleSelect(entry, e)}
+        onSelect={(e) => {
+          handleSelect(entry, e);
+          useFileStore.getState().setFocusedIndex(index);
+        }}
         onOpen={() => handleOpen(entry)}
         onContextMenu={onContextMenu}
         onDragStart={(e) => handleDragStart(e, entry.path)}
@@ -106,7 +119,7 @@ export function ListView({ onContextMenu, onFileOpen }: ListViewProps) {
         }}
       />
     ),
-    [selectedPaths, clipboardPaths, clipboardMode, handleSelect, handleOpen, onContextMenu, handleDragStart, handleDragOver, handleDrop, loadDirectory]
+    [selectedPaths, focusedIndex, clipboardPaths, clipboardMode, handleSelect, handleOpen, onContextMenu, handleDragStart, handleDragOver, handleDrop, loadDirectory]
   );
 
   return (
@@ -135,6 +148,7 @@ export function ListView({ onContextMenu, onFileOpen }: ListViewProps) {
       <div className="flex-1 relative" onContextMenu={onContextMenu}>
         <div className="absolute inset-0 overflow-hidden">
           <Virtuoso
+            ref={virtuosoRef}
             data={visibleEntries}
             itemContent={itemContent}
           />
