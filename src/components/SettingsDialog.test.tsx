@@ -98,10 +98,10 @@ describe("SettingsDialog", () => {
     expect(screen.queryByRole("switch", { name: /hidden/i })).not.toBeInTheDocument();
   });
 
-  it("起動スプラッシュトグルが動作する", () => {
+  it("起動アニメーショントグルが動作する", () => {
     useUIStore.setState({ showSplash: true });
     render(<SettingsDialog open={true} onClose={onClose} />);
-    const toggle = screen.getByRole("switch", { name: /boot splash/i });
+    const toggle = screen.getByRole("switch", { name: /boot animation/i });
     expect(toggle).toBeChecked();
     fireEvent.click(toggle);
     expect(useUIStore.getState().showSplash).toBe(false);

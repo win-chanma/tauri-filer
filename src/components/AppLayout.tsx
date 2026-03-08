@@ -139,15 +139,22 @@ export function AppLayout() {
 
   useEffect(() => {
     const showSplash = useUIStore.getState().showSplash;
+    const bootStart = performance.now();
+    const BOOT_MIN_MS = 1200;
+
     const dismissBoot = () => {
       const el = document.getElementById("boot-screen");
       if (!el) return;
-      if (showSplash) {
+      if (!showSplash) {
+        el.remove();
+        return;
+      }
+      const elapsed = performance.now() - bootStart;
+      const remaining = Math.max(0, BOOT_MIN_MS - elapsed);
+      setTimeout(() => {
         el.classList.add("fade-out");
         setTimeout(() => el.remove(), 300);
-      } else {
-        el.remove();
-      }
+      }, remaining);
     };
 
     if (tabs.length === 0) {

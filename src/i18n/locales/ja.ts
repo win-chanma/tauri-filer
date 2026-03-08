@@ -122,8 +122,8 @@ export const ja = {
   "settings.windowOpacityDesc": "背景の不透明度を調整します（30〜100%）",
 
   // Settings - Display (splash)
-  "settings.showSplash": "起動スプラッシュ",
-  "settings.showSplashDesc": "起動時のブートアニメーションを表示します",
+  "settings.showSplash": "起動アニメーション",
+  "settings.showSplashDesc": "起動時のブートアニメーションをフル再生します",
 
   // Settings - About
   "settings.sectionAbout": "アプリについて",
