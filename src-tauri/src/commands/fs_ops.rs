@@ -379,6 +379,51 @@ mod tests {
         assert!(result.is_err());
     }
 
+    #[test]
+    fn move_items_directory_with_contents() {
+        let dir = tempfile::tempdir().unwrap();
+        let src_dir = dir.path().join("src_dir");
+        fs::create_dir(&src_dir).unwrap();
+        fs::write(src_dir.join("nested.txt"), "nested").unwrap();
+        fs::create_dir(src_dir.join("sub")).unwrap();
+        fs::write(src_dir.join("sub").join("deep.txt"), "deep").unwrap();
+        let dest_dir = dir.path().join("dest");
+        fs::create_dir(&dest_dir).unwrap();
+
+        let result = move_items(
+            vec![src_dir.to_string_lossy().to_string()],
+            dest_dir.to_string_lossy().to_string(),
+        );
+        assert!(result.is_ok());
+        assert!(!src_dir.exists());
+        assert!(dest_dir.join("src_dir").join("nested.txt").exists());
+        assert!(dest_dir.join("src_dir").join("sub").join("deep.txt").exists());
+    }
+
+    #[test]
+    fn move_items_multiple_files() {
+        let dir = tempfile::tempdir().unwrap();
+        let src1 = dir.path().join("a.txt");
+        let src2 = dir.path().join("b.txt");
+        fs::write(&src1, "aaa").unwrap();
+        fs::write(&src2, "bbb").unwrap();
+        let dest_dir = dir.path().join("dest");
+        fs::create_dir(&dest_dir).unwrap();
+
+        let result = move_items(
+            vec![
+                src1.to_string_lossy().to_string(),
+                src2.to_string_lossy().to_string(),
+            ],
+            dest_dir.to_string_lossy().to_string(),
+        );
+        assert!(result.is_ok());
+        assert!(!src1.exists());
+        assert!(!src2.exists());
+        assert_eq!(fs::read_to_string(dest_dir.join("a.txt")).unwrap(), "aaa");
+        assert_eq!(fs::read_to_string(dest_dir.join("b.txt")).unwrap(), "bbb");
+    }
+
     // --- search_files ---
 
     #[test]
