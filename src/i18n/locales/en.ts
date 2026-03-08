@@ -122,8 +122,8 @@ export const en = {
   "settings.windowOpacityDesc": "Adjust the background opacity (30–100%)",
 
   // Settings - Display (splash)
-  "settings.showSplash": "Boot splash",
-  "settings.showSplashDesc": "Show the boot animation on startup",
+  "settings.showSplash": "Boot animation",
+  "settings.showSplashDesc": "Play the full boot animation on startup",
 
   // Settings - About
   "settings.sectionAbout": "About",

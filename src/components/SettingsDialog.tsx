@@ -243,7 +243,7 @@ export function SettingsDialog({ open, onClose }: SettingsDialogProps) {
                   <ToggleSwitch
                     checked={showSplash}
                     onChange={() => setShowSplash(!showSplash)}
-                    aria-label="Show boot splash"
+                    aria-label="Boot animation"
                   />
                 </SettingRow>
               </SettingsPane>
