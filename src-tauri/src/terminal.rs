@@ -14,14 +14,14 @@ struct PtySession {
 
 /// アプリ全体で共有する PTY マネージャ
 pub struct PtyManager {
-    sessions: Mutex<HashMap<u32, PtySession>>,
+    sessions: Arc<Mutex<HashMap<u32, PtySession>>>,
     next_id: Mutex<u32>,
 }
 
 impl PtyManager {
     pub fn new() -> Self {
         Self {
-            sessions: Mutex::new(HashMap::new()),
+            sessions: Arc::new(Mutex::new(HashMap::new())),
             next_id: Mutex::new(1),
         }
     }
@@ -55,8 +55,9 @@ fn which_exists(name: &str) -> bool {
 }
 
 /// PTY を生成しシェルを起動。stdout を Tauri event でストリーミングする。
+/// async にすることでメインスレッドをブロックしない（UI フリーズ防止）。
 #[tauri::command]
-pub fn terminal_spawn(
+pub async fn terminal_spawn(
     app: AppHandle,
     state: tauri::State<'_, PtyManager>,
     cwd: Option<String>,
@@ -64,55 +65,7 @@ pub fn terminal_spawn(
     cols: Option<u16>,
     rows: Option<u16>,
 ) -> Result<u32, String> {
-    let pty_system = native_pty_system();
-
-    let size = PtySize {
-        rows: rows.unwrap_or(24),
-        cols: cols.unwrap_or(80),
-        pixel_width: 0,
-        pixel_height: 0,
-    };
-
-    let pair = pty_system
-        .openpty(size)
-        .map_err(|e| format!("PTY オープン失敗: {}", e))?;
-
-    let shell_path = shell.unwrap_or_else(default_shell);
-    let mut cmd = CommandBuilder::new(&shell_path);
-
-    if let Some(ref dir) = cwd {
-        cmd.cwd(dir);
-    }
-
-    // ターミナル種別を設定（TUI アプリの色・描画機能の判定に使われる）
-    cmd.env("TERM", "xterm-256color");
-
-    // Claude Code のネストセッション検出を回避するため環境変数を除去
-    for key in &["CLAUDECODE", "CLAUDE_CODE"] {
-        cmd.env_remove(key);
-    }
-
-    pair.slave
-        .spawn_command(cmd)
-        .map_err(|e| format!("シェル起動失敗: {}", e))?;
-
-    // slave は spawn 後不要なのでドロップ
-    drop(pair.slave);
-
-    let writer = pair
-        .master
-        .take_writer()
-        .map_err(|e| format!("writer 取得失敗: {}", e))?;
-
-    let mut reader = pair
-        .master
-        .try_clone_reader()
-        .map_err(|e| format!("reader 取得失敗: {}", e))?;
-
-    let kill_flag = Arc::new(Mutex::new(false));
-    let kill_flag_clone = kill_flag.clone();
-
-    // セッション ID を割り当て
+    // セッション ID をメインスレッドで先に割り当て
     let session_id = {
         let mut next = state.next_id.lock().unwrap();
         let id = *next;
@@ -120,39 +73,94 @@ pub fn terminal_spawn(
         id
     };
 
-    // stdout 読み取りスレッド: PTY の出力を Tauri event で送信
-    let app_clone = app.clone();
-    std::thread::spawn(move || {
-        let mut buf = [0u8; 4096];
-        loop {
-            if *kill_flag_clone.lock().unwrap() {
-                break;
-            }
-            match reader.read(&mut buf) {
-                Ok(0) => break, // EOF
-                Ok(n) => {
-                    // バイナリデータをそのまま Base64 ではなく lossy UTF-8 として送る
-                    // xterm.js は UTF-8 テキストを受け取る
-                    let text = String::from_utf8_lossy(&buf[..n]).to_string();
-                    let _ = app_clone.emit("terminal_output", TerminalOutput {
-                        session_id,
-                        data: text,
-                    });
-                }
-                Err(_) => break,
-            }
+    let sessions = state.sessions.clone();
+
+    // PTY のオープン・シェル起動はブロッキング処理なのでバックグラウンドで実行
+    tauri::async_runtime::spawn_blocking(move || {
+        let pty_system = native_pty_system();
+
+        let size = PtySize {
+            rows: rows.unwrap_or(24),
+            cols: cols.unwrap_or(80),
+            pixel_width: 0,
+            pixel_height: 0,
+        };
+
+        let pair = pty_system
+            .openpty(size)
+            .map_err(|e| format!("PTY オープン失敗: {}", e))?;
+
+        let shell_path = shell.unwrap_or_else(default_shell);
+        let mut cmd = CommandBuilder::new(&shell_path);
+
+        if let Some(ref dir) = cwd {
+            cmd.cwd(dir);
         }
-    });
 
-    let session = PtySession {
-        master: pair.master,
-        writer,
-        kill_flag,
-    };
+        // ターミナル種別を設定（TUI アプリの色・描画機能の判定に使われる）
+        cmd.env("TERM", "xterm-256color");
 
-    state.sessions.lock().unwrap().insert(session_id, session);
+        // Claude Code のネストセッション検出を回避するため環境変数を除去
+        for key in &["CLAUDECODE", "CLAUDE_CODE"] {
+            cmd.env_remove(key);
+        }
 
-    Ok(session_id)
+        pair.slave
+            .spawn_command(cmd)
+            .map_err(|e| format!("シェル起動失敗: {}", e))?;
+
+        // slave は spawn 後不要なのでドロップ
+        drop(pair.slave);
+
+        let writer = pair
+            .master
+            .take_writer()
+            .map_err(|e| format!("writer 取得失敗: {}", e))?;
+
+        let mut reader = pair
+            .master
+            .try_clone_reader()
+            .map_err(|e| format!("reader 取得失敗: {}", e))?;
+
+        let kill_flag = Arc::new(Mutex::new(false));
+        let kill_flag_clone = kill_flag.clone();
+
+        // stdout 読み取りスレッド: PTY の出力を Tauri event で送信
+        let app_clone = app.clone();
+        std::thread::spawn(move || {
+            let mut buf = [0u8; 4096];
+            loop {
+                if *kill_flag_clone.lock().unwrap() {
+                    break;
+                }
+                match reader.read(&mut buf) {
+                    Ok(0) => break, // EOF
+                    Ok(n) => {
+                        // バイナリデータをそのまま Base64 ではなく lossy UTF-8 として送る
+                        // xterm.js は UTF-8 テキストを受け取る
+                        let text = String::from_utf8_lossy(&buf[..n]).to_string();
+                        let _ = app_clone.emit("terminal_output", TerminalOutput {
+                            session_id,
+                            data: text,
+                        });
+                    }
+                    Err(_) => break,
+                }
+            }
+        });
+
+        let session = PtySession {
+            master: pair.master,
+            writer,
+            kill_flag,
+        };
+
+        sessions.lock().unwrap().insert(session_id, session);
+
+        Ok(session_id)
+    })
+    .await
+    .map_err(|e| format!("スレッド実行失敗: {}", e))?
 }
 
 /// PTY stdin にデータを書き込む
