@@ -124,17 +124,30 @@ export function AppLayout() {
   );
 
   useEffect(() => {
+    const dismissBoot = () => {
+      const el = document.getElementById("boot-screen");
+      if (el) {
+        el.classList.add("fade-out");
+        setTimeout(() => el.remove(), 300);
+      }
+    };
+
     if (tabs.length === 0) {
       getHomeDir()
         .then((home) => {
           addTab(home);
           return loadDirectory(home);
         })
+        .then(() => dismissBoot())
         .catch((err) => {
           console.error("Init failed:", err);
           addTab("/");
-          loadDirectory("/").catch(() => {});
+          loadDirectory("/")
+            .then(() => dismissBoot())
+            .catch(() => dismissBoot());
         });
+    } else {
+      dismissBoot();
     }
   }, []);
 
@@ -186,7 +199,7 @@ export function AppLayout() {
   });
 
   return (
-    <div className="flex flex-col h-screen bg-[var(--color-bg)] text-[var(--color-text)]">
+    <div className="flex flex-col h-screen bg-[var(--color-bg)] text-[var(--color-text)] animate-[fade-in_300ms_ease-out]">
       <TabBar />
       <Toolbar onSettingsOpen={() => setSettingsOpen(true)} />
       <div className="flex flex-1 min-h-0">

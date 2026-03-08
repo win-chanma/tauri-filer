@@ -14,10 +14,16 @@ pub fn run() {
         .plugin(tauri_plugin_shell::init())
         .plugin(tauri_plugin_updater::Builder::new().build())
         .manage(PtyManager::new())
-        .on_page_load(|webview, _payload| {
-            if let Ok(icon) = tauri::image::Image::from_bytes(include_bytes!("../icons/icon.png")) {
-                let _ = webview.window().set_icon(icon);
+        .setup(|app| {
+            use tauri::Manager;
+            if let Some(window) = app.get_webview_window("main") {
+                if let Ok(icon) =
+                    tauri::image::Image::from_bytes(include_bytes!("../icons/icon.png"))
+                {
+                    let _ = window.set_icon(icon);
+                }
             }
+            Ok(())
         })
         .invoke_handler(tauri::generate_handler![
             read_directory,
