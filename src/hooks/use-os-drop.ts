@@ -4,6 +4,17 @@ import { useTabStore } from "../stores/tab-store";
 import { useFileStore } from "../stores/file-store";
 import { copyItems } from "../commands/fs-commands";
 
+export function isDropFromSameFolder(droppedPaths: string[], tabPath: string): boolean {
+  const norm = (p: string) => p.replace(/\\/g, "/").replace(/\/$/, "").toLowerCase();
+  const tabNorm = norm(tabPath);
+  return droppedPaths.every((p) => {
+    const normalized = norm(p);
+    const lastSlash = normalized.lastIndexOf("/");
+    const parent = lastSlash > 0 ? normalized.substring(0, lastSlash) : normalized;
+    return parent === tabNorm;
+  });
+}
+
 export function useOsDrop() {
   const [isDraggingOver, setIsDraggingOver] = useState(false);
 
@@ -37,6 +48,8 @@ export function useOsDrop() {
               (t) => t.id === useTabStore.getState().activeTabId
             );
           if (!tab) return;
+
+          if (isDropFromSameFolder(droppedPaths, tab.path)) return;
 
           copyItems(droppedPaths, tab.path)
             .then(() => {
