@@ -138,11 +138,15 @@ export function AppLayout() {
   );
 
   useEffect(() => {
+    const showSplash = useUIStore.getState().showSplash;
     const dismissBoot = () => {
       const el = document.getElementById("boot-screen");
-      if (el) {
+      if (!el) return;
+      if (showSplash) {
         el.classList.add("fade-out");
         setTimeout(() => el.remove(), 300);
+      } else {
+        el.remove();
       }
     };
 
