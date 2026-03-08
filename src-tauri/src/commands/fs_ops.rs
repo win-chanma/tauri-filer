@@ -49,7 +49,13 @@ pub fn copy_items(sources: Vec<String>, destination: String) -> Result<(), Strin
         let file_name = src_path
             .file_name()
             .ok_or_else(|| format!("ファイル名が取得できません: {}", source))?;
-        let dest = dest_path.join(file_name);
+        let mut dest = dest_path.join(file_name);
+
+        // Same-folder copy: auto-rename to avoid collision
+        let same_folder = src_path.parent() == Some(dest_path);
+        if same_folder && (dest == src_path || dest.exists()) {
+            dest = generate_unique_name(&dest);
+        }
 
         if src_path.is_dir() {
             copy_dir_recursive(src_path, &dest)?;
@@ -60,6 +66,80 @@ pub fn copy_items(sources: Vec<String>, destination: String) -> Result<(), Strin
     }
 
     Ok(())
+}
+
+#[tauri::command]
+pub fn check_copy_conflicts(
+    sources: Vec<String>,
+    destination: String,
+) -> Result<Vec<String>, String> {
+    let dest_path = Path::new(&destination);
+    let mut conflicts = Vec::new();
+    for source in &sources {
+        let src_path = Path::new(source);
+        if let Some(name) = src_path.file_name() {
+            let dest = dest_path.join(name);
+            let same_folder = src_path.parent() == Some(dest_path);
+            if !same_folder && dest.exists() {
+                conflicts.push(name.to_string_lossy().to_string());
+            }
+        }
+    }
+    Ok(conflicts)
+}
+
+#[tauri::command]
+pub fn copy_items_with_strategy(
+    sources: Vec<String>,
+    destination: String,
+    strategy: String,
+) -> Result<(), String> {
+    let dest_path = Path::new(&destination);
+    if !dest_path.is_dir() {
+        return Err("コピー先がディレクトリではありません".to_string());
+    }
+
+    for source in &sources {
+        let src_path = Path::new(source);
+        let file_name = src_path
+            .file_name()
+            .ok_or_else(|| format!("ファイル名が取得できません: {}", source))?;
+        let mut dest = dest_path.join(file_name);
+
+        let same_folder = src_path.parent() == Some(dest_path);
+        if same_folder && (dest == src_path || dest.exists()) {
+            dest = generate_unique_name(&dest);
+        } else if !same_folder && dest.exists() {
+            match strategy.as_str() {
+                "skip" => continue,
+                "rename" => dest = generate_unique_name(&dest),
+                _ => {} // "overwrite" — proceed with copy (overwrites)
+            }
+        }
+
+        if src_path.is_dir() {
+            copy_dir_recursive(src_path, &dest)?;
+        } else {
+            std::fs::copy(src_path, &dest)
+                .map_err(|e| format!("コピー失敗: {} -> {}: {}", source, dest.display(), e))?;
+        }
+    }
+    Ok(())
+}
+
+fn generate_unique_name(path: &Path) -> std::path::PathBuf {
+    let parent = path.parent().unwrap_or(Path::new("."));
+    let stem = path.file_stem().unwrap_or_default().to_string_lossy();
+    let ext = path.extension().map(|e| format!(".{}", e.to_string_lossy())).unwrap_or_default();
+
+    let mut n = 2;
+    loop {
+        let candidate = parent.join(format!("{} ({}){}", stem, n, ext));
+        if !candidate.exists() {
+            return candidate;
+        }
+        n += 1;
+    }
 }
 
 fn copy_dir_recursive(src: &Path, dst: &Path) -> Result<(), String> {
@@ -377,6 +457,172 @@ mod tests {
             "/nonexistent".to_string(),
         );
         assert!(result.is_err());
+    }
+
+    // --- copy_items: same-folder auto-rename (#52) ---
+
+    #[test]
+    fn copy_items_same_folder_auto_renames_file() {
+        let dir = tempfile::tempdir().unwrap();
+        let src = dir.path().join("file.txt");
+        fs::write(&src, "original").unwrap();
+
+        let result = copy_items(
+            vec![src.to_string_lossy().to_string()],
+            dir.path().to_string_lossy().to_string(),
+        );
+        assert!(result.is_ok());
+        // Original should still exist
+        assert!(src.exists());
+        // A renamed copy should exist
+        let renamed = dir.path().join("file (2).txt");
+        assert!(renamed.exists(), "file (2).txt should exist");
+        assert_eq!(fs::read_to_string(&renamed).unwrap(), "original");
+    }
+
+    #[test]
+    fn copy_items_same_folder_increments_number() {
+        let dir = tempfile::tempdir().unwrap();
+        let src = dir.path().join("file.txt");
+        fs::write(&src, "original").unwrap();
+        fs::write(dir.path().join("file (2).txt"), "existing").unwrap();
+
+        let result = copy_items(
+            vec![src.to_string_lossy().to_string()],
+            dir.path().to_string_lossy().to_string(),
+        );
+        assert!(result.is_ok());
+        let renamed = dir.path().join("file (3).txt");
+        assert!(renamed.exists(), "file (3).txt should exist");
+    }
+
+    #[test]
+    fn copy_items_same_folder_directory() {
+        let dir = tempfile::tempdir().unwrap();
+        let src_dir = dir.path().join("my_folder");
+        fs::create_dir(&src_dir).unwrap();
+        fs::write(src_dir.join("inside.txt"), "content").unwrap();
+
+        let result = copy_items(
+            vec![src_dir.to_string_lossy().to_string()],
+            dir.path().to_string_lossy().to_string(),
+        );
+        assert!(result.is_ok());
+        assert!(src_dir.exists());
+        let renamed = dir.path().join("my_folder (2)");
+        assert!(renamed.is_dir(), "my_folder (2) should exist");
+        assert!(renamed.join("inside.txt").exists());
+    }
+
+    // --- copy_items: overwrite detection (#102) ---
+
+    #[test]
+    fn copy_items_different_folder_existing_file_overwrites() {
+        let dir = tempfile::tempdir().unwrap();
+        let src = dir.path().join("file.txt");
+        fs::write(&src, "new content").unwrap();
+        let dest_dir = dir.path().join("dest");
+        fs::create_dir(&dest_dir).unwrap();
+        fs::write(dest_dir.join("file.txt"), "old content").unwrap();
+
+        let result = copy_items(
+            vec![src.to_string_lossy().to_string()],
+            dest_dir.to_string_lossy().to_string(),
+        );
+        assert!(result.is_ok());
+        // Default behavior: overwrite
+        assert_eq!(fs::read_to_string(dest_dir.join("file.txt")).unwrap(), "new content");
+    }
+
+    // --- check_copy_conflicts ---
+
+    #[test]
+    fn check_copy_conflicts_detects_existing() {
+        let dir = tempfile::tempdir().unwrap();
+        let src = dir.path().join("file.txt");
+        fs::write(&src, "data").unwrap();
+        let dest_dir = dir.path().join("dest");
+        fs::create_dir(&dest_dir).unwrap();
+        fs::write(dest_dir.join("file.txt"), "old").unwrap();
+
+        let conflicts = check_copy_conflicts(
+            vec![src.to_string_lossy().to_string()],
+            dest_dir.to_string_lossy().to_string(),
+        ).unwrap();
+        assert_eq!(conflicts, vec!["file.txt"]);
+    }
+
+    #[test]
+    fn check_copy_conflicts_no_conflict() {
+        let dir = tempfile::tempdir().unwrap();
+        let src = dir.path().join("file.txt");
+        fs::write(&src, "data").unwrap();
+        let dest_dir = dir.path().join("dest");
+        fs::create_dir(&dest_dir).unwrap();
+
+        let conflicts = check_copy_conflicts(
+            vec![src.to_string_lossy().to_string()],
+            dest_dir.to_string_lossy().to_string(),
+        ).unwrap();
+        assert!(conflicts.is_empty());
+    }
+
+    #[test]
+    fn copy_items_with_strategy_skip() {
+        let dir = tempfile::tempdir().unwrap();
+        let src = dir.path().join("file.txt");
+        fs::write(&src, "new").unwrap();
+        let dest_dir = dir.path().join("dest");
+        fs::create_dir(&dest_dir).unwrap();
+        fs::write(dest_dir.join("file.txt"), "old").unwrap();
+
+        let result = copy_items_with_strategy(
+            vec![src.to_string_lossy().to_string()],
+            dest_dir.to_string_lossy().to_string(),
+            "skip".to_string(),
+        );
+        assert!(result.is_ok());
+        assert_eq!(fs::read_to_string(dest_dir.join("file.txt")).unwrap(), "old");
+    }
+
+    #[test]
+    fn copy_items_with_strategy_overwrite() {
+        let dir = tempfile::tempdir().unwrap();
+        let src = dir.path().join("file.txt");
+        fs::write(&src, "new").unwrap();
+        let dest_dir = dir.path().join("dest");
+        fs::create_dir(&dest_dir).unwrap();
+        fs::write(dest_dir.join("file.txt"), "old").unwrap();
+
+        let result = copy_items_with_strategy(
+            vec![src.to_string_lossy().to_string()],
+            dest_dir.to_string_lossy().to_string(),
+            "overwrite".to_string(),
+        );
+        assert!(result.is_ok());
+        assert_eq!(fs::read_to_string(dest_dir.join("file.txt")).unwrap(), "new");
+    }
+
+    #[test]
+    fn copy_items_with_strategy_rename() {
+        let dir = tempfile::tempdir().unwrap();
+        let src = dir.path().join("file.txt");
+        fs::write(&src, "new").unwrap();
+        let dest_dir = dir.path().join("dest");
+        fs::create_dir(&dest_dir).unwrap();
+        fs::write(dest_dir.join("file.txt"), "old").unwrap();
+
+        let result = copy_items_with_strategy(
+            vec![src.to_string_lossy().to_string()],
+            dest_dir.to_string_lossy().to_string(),
+            "rename".to_string(),
+        );
+        assert!(result.is_ok());
+        // Original untouched
+        assert_eq!(fs::read_to_string(dest_dir.join("file.txt")).unwrap(), "old");
+        // Renamed copy exists
+        assert!(dest_dir.join("file (2).txt").exists());
+        assert_eq!(fs::read_to_string(dest_dir.join("file (2).txt")).unwrap(), "new");
     }
 
     // --- search_files ---

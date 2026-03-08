@@ -1,5 +1,6 @@
 import type { FileEntry } from "../types";
 import { readClipboardFiles } from "../commands/clipboard-commands";
+import { pasteWithConflictCheck, type PasteResult } from "./paste-with-conflicts";
 
 export interface ContextMenuDeps {
   getActiveTabPath: () => string | null;
@@ -17,6 +18,7 @@ export interface ContextMenuDeps {
   clipboardClear: () => void;
   clearSelection: () => void;
   refresh: () => void;
+  onConflict?: (result: PasteResult) => void;
 }
 
 export function createContextMenuHandlers(deps: ContextMenuDeps) {
@@ -36,7 +38,6 @@ export function createContextMenuHandlers(deps: ContextMenuDeps) {
     const tabPath = deps.getActiveTabPath();
     if (!tabPath) return;
 
-    // Try OS clipboard first, fall back to internal
     let pastePaths = deps.clipboardPaths;
     let pasteMode = deps.clipboardMode;
     try {
@@ -51,13 +52,17 @@ export function createContextMenuHandlers(deps: ContextMenuDeps) {
 
     if (pastePaths.length === 0) return;
     try {
-      if (pasteMode === "copy") {
-        await deps.copyItems(pastePaths, tabPath);
-      } else if (pasteMode === "cut") {
-        await deps.moveItems(pastePaths, tabPath);
-        deps.clipboardClear();
+      const result = await pasteWithConflictCheck({
+        paths: pastePaths,
+        mode: pasteMode,
+        destination: tabPath,
+      });
+      if (result) {
+        deps.onConflict?.(result);
+      } else {
+        if (pasteMode === "cut") deps.clipboardClear();
+        deps.refresh();
       }
-      deps.refresh();
     } catch (err) {
       console.error("Paste failed:", err);
     }

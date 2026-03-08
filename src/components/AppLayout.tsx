@@ -28,6 +28,8 @@ import { ContextMenu } from "./ContextMenu";
 import { EmptyState } from "./EmptyState";
 import { FileListSkeleton } from "./FileListSkeleton";
 import type { FileEntry } from "../types";
+import type { PasteResult } from "../utils/paste-with-conflicts";
+import { executePasteWithStrategy } from "../utils/paste-with-conflicts";
 
 const ListView = lazy(() => import("./ListView").then((m) => ({ default: m.ListView })));
 const GridView = lazy(() => import("./GridView").then((m) => ({ default: m.GridView })));
@@ -38,6 +40,7 @@ const RenameDialog = lazy(() => import("./RenameDialog").then((m) => ({ default:
 const DeleteConfirmDialog = lazy(() => import("./DeleteConfirmDialog").then((m) => ({ default: m.DeleteConfirmDialog })));
 const SearchDialog = lazy(() => import("./SearchDialog").then((m) => ({ default: m.SearchDialog })));
 const FilePreviewDialog = lazy(() => import("./FilePreviewDialog").then((m) => ({ default: m.FilePreviewDialog })));
+const CopyConflictDialog = lazy(() => import("./CopyConflictDialog").then((m) => ({ default: m.CopyConflictDialog })));
 
 export function AppLayout() {
   const { t } = useTranslation();
@@ -67,6 +70,7 @@ export function AppLayout() {
   const [previewEntry, setPreviewEntry] = useState<FileEntry | null>(null);
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [terminalWidth, setTerminalWidth] = useState(400);
+  const [conflictResult, setConflictResult] = useState<PasteResult | null>(null);
   const isDraggingRef = useRef(false);
 
   const { menu, show: showContextMenu, hide: hideContextMenu } = useContextMenu();
@@ -89,6 +93,7 @@ export function AppLayout() {
         openFile(entry.path).catch(console.error);
       }
     },
+    onConflict: setConflictResult,
   });
 
   useMouseNavigation();
@@ -182,6 +187,7 @@ export function AppLayout() {
       clipboardClear,
       clearSelection,
       refresh,
+      onConflict: setConflictResult,
     });
 
   const selectedEntry = getSelectedEntry();
@@ -308,6 +314,27 @@ export function AppLayout() {
           <SettingsDialog
             open={settingsOpen}
             onClose={() => setSettingsOpen(false)}
+          />
+        </Suspense>
+      )}
+      {conflictResult && (
+        <Suspense fallback={null}>
+          <CopyConflictDialog
+            open={!!conflictResult}
+            conflicts={conflictResult.conflicts}
+            onResolve={async (strategy) => {
+              try {
+                await executePasteWithStrategy(conflictResult.request, strategy);
+                if (conflictResult.request.mode === "cut") {
+                  useClipboardStore.getState().clear();
+                }
+                refresh();
+              } catch (err) {
+                console.error("Paste failed:", err);
+              }
+              setConflictResult(null);
+            }}
+            onCancel={() => setConflictResult(null)}
           />
         </Suspense>
       )}

@@ -52,6 +52,14 @@ export const ja = {
   "delete.cancel": "キャンセル",
   "delete.submit": "削除",
 
+  // CopyConflictDialog
+  "conflict.title": "ファイルの競合",
+  "conflict.message": "コピー先に同名のファイルが {{count}} 件あります:",
+  "conflict.overwrite": "上書き",
+  "conflict.skip": "スキップ",
+  "conflict.rename": "両方残す",
+  "conflict.cancel": "キャンセル",
+
   // NewFolderDialog
   "newFolder.title": "新しいフォルダ",
   "newFolder.placeholder": "フォルダ名",

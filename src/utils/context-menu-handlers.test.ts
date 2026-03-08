@@ -10,6 +10,8 @@ vi.mock("../commands/fs-commands", () => ({
   copyItems: vi.fn(),
   moveItems: vi.fn(),
   openFile: vi.fn(),
+  checkCopyConflicts: vi.fn().mockResolvedValue([]),
+  copyItemsWithStrategy: vi.fn(),
 }));
 
 import { createContextMenuHandlers } from "./context-menu-handlers";

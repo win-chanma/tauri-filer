@@ -41,6 +41,8 @@ pub fn run() {
             terminal::terminal_resize,
             terminal::terminal_kill,
             check_update_version,
+            check_copy_conflicts,
+            copy_items_with_strategy,
             read_clipboard_files,
             write_clipboard_files,
         ])

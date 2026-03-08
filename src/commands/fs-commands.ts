@@ -64,3 +64,18 @@ export async function readFilePreview(
 export async function openFile(path: string): Promise<void> {
   return open(path);
 }
+
+export async function checkCopyConflicts(
+  sources: string[],
+  destination: string
+): Promise<string[]> {
+  return invoke<string[]>("check_copy_conflicts", { sources, destination });
+}
+
+export async function copyItemsWithStrategy(
+  sources: string[],
+  destination: string,
+  strategy: string
+): Promise<void> {
+  return invoke("copy_items_with_strategy", { sources, destination, strategy });
+}

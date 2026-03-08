@@ -52,6 +52,14 @@ export const en = {
   "delete.cancel": "Cancel",
   "delete.submit": "Delete",
 
+  // CopyConflictDialog
+  "conflict.title": "File Conflict",
+  "conflict.message": "{{count}} file(s) already exist at destination:",
+  "conflict.overwrite": "Overwrite",
+  "conflict.skip": "Skip",
+  "conflict.rename": "Keep Both",
+  "conflict.cancel": "Cancel",
+
   // NewFolderDialog
   "newFolder.title": "New Folder",
   "newFolder.placeholder": "Folder name",
