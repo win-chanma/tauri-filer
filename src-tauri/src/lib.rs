@@ -17,6 +17,24 @@ pub fn run() {
         .manage(PtyManager::new())
         .setup(|app| {
             use tauri::Manager;
+
+            // Clear WebView2 caches to maintain fast startup
+            if let Ok(data_dir) = app.path().app_local_data_dir() {
+                let webview_dir = data_dir.join("EBWebView");
+                let cache_dirs = [
+                    webview_dir.join("Default").join("Cache"),
+                    webview_dir.join("Default").join("Code Cache"),
+                    webview_dir.join("GrShaderCache"),
+                    webview_dir.join("ShaderCache"),
+                    webview_dir.join("GraphiteDawnCache"),
+                ];
+                for dir in &cache_dirs {
+                    if dir.is_dir() {
+                        let _ = std::fs::remove_dir_all(dir);
+                    }
+                }
+            }
+
             if let Some(window) = app.get_webview_window("main") {
                 if let Ok(icon) =
                     tauri::image::Image::from_bytes(include_bytes!("../icons/icon.png"))
