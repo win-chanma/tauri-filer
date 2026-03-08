@@ -8,6 +8,7 @@ interface FileStore {
   entries: FileEntry[];
   selectedPaths: Set<string>;
   lastSelectedPath: string | null;
+  focusedIndex: number;
   sortConfig: SortConfig;
   loading: boolean;
   error: string | null;
@@ -19,19 +20,21 @@ interface FileStore {
   selectAll: () => void;
   clearSelection: () => void;
   setSortConfig: (config: SortConfig) => void;
+  setFocusedIndex: (index: number) => void;
 }
 
 export const useFileStore = create<FileStore>((set, get) => ({
   entries: [],
   selectedPaths: new Set(),
   lastSelectedPath: null,
+  focusedIndex: -1,
   sortConfig: { key: "name", order: "asc" },
   loading: true,
   error: null,
 
   loadDirectory: async (path) => {
     const gen = ++loadGeneration;
-    set({ loading: true, error: null, selectedPaths: new Set(), lastSelectedPath: null });
+    set({ loading: true, error: null, selectedPaths: new Set(), lastSelectedPath: null, focusedIndex: -1 });
     try {
       const entries = await readDirectory(path);
       // 古いリクエストの結果は無視
@@ -82,6 +85,8 @@ export const useFileStore = create<FileStore>((set, get) => ({
   },
 
   clearSelection: () => set({ selectedPaths: new Set(), lastSelectedPath: null }),
+
+  setFocusedIndex: (index) => set({ focusedIndex: index }),
 
   setSortConfig: (config) => set({ sortConfig: config }),
 }));
