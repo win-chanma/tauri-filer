@@ -19,6 +19,7 @@ import { buildContextMenuItems } from "../utils/context-menu-items";
 import { createContextMenuHandlers } from "../utils/context-menu-handlers";
 import { useKeyboardShortcuts } from "../hooks/use-keyboard-shortcuts";
 import { useMouseNavigation } from "../hooks/use-mouse-navigation";
+import { useOsDrop } from "../hooks/use-os-drop";
 import { TabBar } from "./TabBar";
 import { Toolbar } from "./Toolbar";
 import { Sidebar } from "./Sidebar";
@@ -84,6 +85,7 @@ export function AppLayout() {
   });
 
   useMouseNavigation();
+  const { isDraggingOver } = useOsDrop();
 
   // アクティブタブのパスを取得（ターミナルの cwd に使用）
   const activeTabPath = useTabStore((s) => {
@@ -199,7 +201,7 @@ export function AppLayout() {
   });
 
   return (
-    <div className="flex flex-col h-screen bg-[var(--color-bg)] text-[var(--color-text)] animate-[fade-in_300ms_ease-out]">
+    <div className={`flex flex-col h-screen bg-[var(--color-bg)] text-[var(--color-text)] animate-[fade-in_300ms_ease-out]${isDraggingOver ? " ring-2 ring-inset ring-[var(--color-accent)]" : ""}`}>
       <TabBar />
       <Toolbar onSettingsOpen={() => setSettingsOpen(true)} />
       <div className="flex flex-1 min-h-0">
