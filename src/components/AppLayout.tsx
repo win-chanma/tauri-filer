@@ -1,6 +1,5 @@
 import { useEffect, useState, useCallback, useRef, lazy, Suspense } from "react";
 import { useTranslation } from "react-i18next";
-import { getCurrentWindow } from "@tauri-apps/api/window";
 import { useTabStore } from "../stores/tab-store";
 import { useFileStore } from "../stores/file-store";
 import { useUIStore } from "../stores/ui-store";
@@ -125,13 +124,6 @@ export function AppLayout() {
   );
 
   useEffect(() => {
-    // Show window immediately — skeleton UI is already visible
-    try {
-      getCurrentWindow().show().catch(() => {});
-    } catch {
-      // not in Tauri context
-    }
-
     if (tabs.length === 0) {
       getHomeDir()
         .then((home) => {
